@@ -1,7 +1,7 @@
 export const environment = {
-  production: false,
-  apiUrl: 'https://api.amdc.hn'
-  //apiUrl: 'http://localhost:3000'
+  production: true,
+  //apiUrl: 'https://api.amdc.hn'
+ apiUrl: 'http://localhost:3000'
 };
 
 

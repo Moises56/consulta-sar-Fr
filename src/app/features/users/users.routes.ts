@@ -18,11 +18,17 @@ export const USER_ROUTES: Routes = [
     path: ':id',
     loadComponent: () => import('./user-form/user-form.component').then(m => m.UserFormComponent),
     canActivate: [authGuard],
-    data: { role: 'ADMIN' }
+    data: { role: 'ADMIN' },
+    resolve: {
+      renderMode: () => 'client'
+    }
   },
   {
     path: ':id/password',
     loadComponent: () => import('./user-password/user-password.component').then(m => m.UserPasswordComponent),
-    canActivate: [authGuard]
+    canActivate: [authGuard],
+    resolve: {
+      renderMode: () => 'client'
+    }
   }
 ];

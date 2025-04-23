@@ -19,7 +19,7 @@ import { User } from '../../core/interfaces/user.interface';
             <p class="mt-1 text-sm text-gray-500">¿Qué deseas hacer hoy?</p>
           </div>
           <div class="hidden sm:block">
-            <img src="assets/welcome.svg" alt="Welcome" class="h-20 w-20">
+            <img src="https://gestorimg.amdc.hn/uploads/1743178647837-488843555-logo2.webp" alt="Welcome" class="h-20 w-20">
           </div>
         </div>
       </div>

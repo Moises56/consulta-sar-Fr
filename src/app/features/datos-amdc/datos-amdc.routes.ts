@@ -17,6 +17,9 @@ export const DATOS_AMDC_ROUTES: Routes = [
     path: ':id',
     loadComponent: () => import('./datos-amdc-form/datos-amdc-form.component').then(m => m.DatosAMDCFormComponent),
     canActivate: [authGuard],
-    data: { role: 'ADMIN' }
+    data: { role: 'ADMIN' },
+    resolve: {
+      renderMode: () => 'client'
+    }
   }
 ];

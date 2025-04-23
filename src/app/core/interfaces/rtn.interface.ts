@@ -5,6 +5,26 @@ export interface ObligadoTributario {
   direccion?: string;
   telefono?: string;
   email?: string;
+  // Nuevos campos para la información detallada
+  fechaInicioActividad?: string;
+  departamento?: {
+    descripcion: string;
+    departamentoId?: string;
+  };
+  actividadPrimaria?: {
+    descripcion: string;
+    actividadId: string;
+  };
+  actividadSecundaria?: {
+    descripcion: string;
+    actividadId: string;
+  };
+  // Campos para la dirección detallada
+  barrio?: string;
+  calleAvenida?: string;
+  numeroCasa?: string;
+  bloque?: string;
+  sector?: string;
 }
 
 export interface VentasBrutasData {

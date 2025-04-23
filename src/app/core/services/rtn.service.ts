@@ -16,7 +16,23 @@ export class RtnService {
   consultarRtn(rtn: string): Observable<RtnResponse> {
     return this.http.post<RtnResponse>(`${this.apiUrl}/consulta`, { rtn }, {
       withCredentials: true
-    });
+    }).pipe(
+      this.retryWithBackoff<RtnResponse>(),
+      catchError(error => {
+        // Si es un error 400, capturamos el mensaje para mostrarlo al usuario
+        if (error instanceof HttpErrorResponse && error.status === 400) {
+          return throwError(() => ({
+            status: error.status,
+            message: error.error?.message || 'Error en la solicitud',
+            isUserMessage: true // Flag para indicar que es un mensaje para mostrar al usuario
+          }));
+        }
+        
+        // Si después de todos los reintentos sigue fallando, propagamos el error
+        console.error('Error después de múltiples reintentos en consultarRtn:', error);
+        return throwError(() => error);
+      })
+    );
   }
 
   consultarVentasBrutas(rtn: string, periodoDesde: string, periodoHasta: string): Observable<VentasBrutasResponse> {

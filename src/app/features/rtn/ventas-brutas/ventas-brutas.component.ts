@@ -48,37 +48,110 @@ type CustomError = { status: number; message: string; isUserMessage: boolean };
                 </div>
               </div>
 
+              <!-- DatePicker Periodo Desde -->
               <div>
                 <label for="periodoDesde" class="block text-sm font-medium text-gray-700">Periodo Desde</label>
-                <select id="periodoDesde" formControlName="periodoDesde"
-                  class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
-                  <option value="">Seleccione un periodo</option>
-                  <optgroup *ngFor="let year of getYears()" [label]="year">
-                    <option *ngFor="let periodo of periodosAgrupados[year]" [value]="periodo">
-                      {{year}}-{{periodo.slice(4)}}
-                    </option>
-                  </optgroup>
-                </select>
-                <div *ngIf="searchForm.get('periodoDesde')?.errors?.['required'] && searchForm.get('periodoDesde')?.touched"
-                  class="text-red-500 text-sm mt-1">
-                  El periodo inicial es requerido
+                <div class="relative mt-1">
+                  <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                    <svg class="w-4 h-4 text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M20 4a2 2 0 0 0-2-2h-2V1a1 1 0 0 0-2 0v1h-3V1a1 1 0 0 0-2 0v1H6V1a1 1 0 0 0-2 0v1H2a2 2 0 0 0-2 2v2h20V4ZM0 18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8H0v10Zm5-8h10a1 1 0 0 1 0 2H5a1 1 0 0 1 0-2Z"/>
+                    </svg>
+                  </div>
+                  <input 
+                    type="text" 
+                    id="periodoDesde" 
+                    formControlName="periodoDesdeDisplay"
+                    [value]="formatDisplayDate(searchForm.get('periodoDesde')?.value)"
+                    readonly
+                    (click)="toggleCalendarDesde()"
+                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 p-2.5"
+                    placeholder="Seleccione periodo inicial">
+                  <div *ngIf="showCalendarDesde" class="absolute z-10 mt-1 w-64">
+                    <div class="bg-gray-800 text-white rounded-lg shadow-lg overflow-hidden">
+                      <!-- Header con año y navegación -->
+                      <div class="flex justify-between items-center p-2">
+                        <button type="button" (click)="prevYear()" class="p-1 hover:bg-gray-700 rounded">
+                          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                          </svg>
+                        </button>
+                        <div class="font-semibold">{{ currentYear }}</div>
+                        <button type="button" (click)="nextYear()" class="p-1 hover:bg-gray-700 rounded">
+                          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                          </svg>
+                        </button>
+                      </div>
+                      <!-- Grid de meses -->
+                      <div class="grid grid-cols-4 gap-2 p-2">
+                        <button 
+                          *ngFor="let month of monthsDisplay; let i = index" 
+                          type="button"
+                          (click)="selectMonthDesde(i + 1)"
+                          class="text-center py-2 hover:bg-gray-700 rounded">
+                          {{ month }}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  <div *ngIf="searchForm.get('periodoDesde')?.errors?.['required'] && searchForm.get('periodoDesde')?.touched"
+                    class="text-red-500 text-sm mt-1">
+                    El periodo inicial es requerido
+                  </div>
                 </div>
               </div>
 
+              <!-- DatePicker Periodo Hasta -->
               <div>
                 <label for="periodoHasta" class="block text-sm font-medium text-gray-700">Periodo Hasta</label>
-                <select id="periodoHasta" formControlName="periodoHasta"
-                  class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
-                  <option value="">Seleccione un periodo</option>
-                  <optgroup *ngFor="let year of getYears()" [label]="year">
-                    <option *ngFor="let periodo of periodosAgrupados[year]" [value]="periodo">
-                      {{year}}-{{periodo.slice(4)}}
-                    </option>
-                  </optgroup>
-                </select>
-                <div *ngIf="searchForm.get('periodoHasta')?.errors?.['required'] && searchForm.get('periodoHasta')?.touched"
-                  class="text-red-500 text-sm mt-1">
-                  El periodo final es requerido
+                <div class="relative mt-1">
+                  <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                    <svg class="w-4 h-4 text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M20 4a2 2 0 0 0-2-2h-2V1a1 1 0 0 0-2 0v1h-3V1a1 1 0 0 0-2 0v1H6V1a1 1 0 0 0-2 0v1H2a2 2 0 0 0-2 2v2h20V4ZM0 18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8H0v10Zm5-8h10a1 1 0 0 1 0 2H5a1 1 0 0 1 0-2Z"/>
+                    </svg>
+                  </div>
+                  <input 
+                    type="text" 
+                    id="periodoHasta" 
+                    formControlName="periodoHastaDisplay"
+                    [value]="formatDisplayDate(searchForm.get('periodoHasta')?.value)"
+                    readonly
+                    (click)="toggleCalendarHasta()"
+                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 p-2.5"
+                    placeholder="Seleccione periodo final">
+                  <div *ngIf="showCalendarHasta" class="absolute z-10 mt-1 w-64">
+                    <div class="bg-gray-800 text-white rounded-lg shadow-lg overflow-hidden">
+                      <!-- Header con año y navegación -->
+                      <div class="flex justify-between items-center p-2">
+                        <button type="button" (click)="prevYear()" class="p-1 hover:bg-gray-700 rounded">
+                          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                          </svg>
+                        </button>
+                        <div class="font-semibold">{{ currentYear }}</div>
+                        <button type="button" (click)="nextYear()" class="p-1 hover:bg-gray-700 rounded">
+                          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                          </svg>
+                        </button>
+                      </div>
+                      <!-- Grid de meses -->
+                      <div class="grid grid-cols-4 gap-2 p-2">
+                        <button 
+                          *ngFor="let month of monthsDisplay; let i = index" 
+                          type="button"
+                          [disabled]="isMonthDisabled(i + 1)"
+                          [class]="isMonthDisabled(i + 1) ? 'text-center py-2 text-gray-500 cursor-not-allowed' : 'text-center py-2 hover:bg-gray-700 rounded'"
+                          (click)="!isMonthDisabled(i + 1) && selectMonthHasta(i + 1)">
+                          {{ month }}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  <div *ngIf="searchForm.get('periodoHasta')?.errors?.['required'] && searchForm.get('periodoHasta')?.touched"
+                    class="text-red-500 text-sm mt-1">
+                    El periodo final es requerido
+                  </div>
                 </div>
               </div>
             </div>
@@ -275,7 +348,31 @@ export class VentasBrutasComponent {
   canRetryManually = false;
   lastSearchParams: { rtn: string, periodoDesde: string, periodoHasta: string, anio: string } | null = null;
 
+  // Variables para el calendario
+  showCalendarDesde = false;
+  showCalendarHasta = false;
+  currentYear = new Date().getFullYear();
+  monthsDisplay = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
   periodosAgrupados: { [key: string]: string[] } = {};
+  
+  // Periodos disponibles filtrados basados en el periodo desde seleccionado
+  periodosDisponibles: string[] = [];
+  
+  // Mapa de números de mes a nombres
+  private nombresMeses: { [key: string]: string } = {
+    '01': 'Enero',
+    '02': 'Febrero',
+    '03': 'Marzo',
+    '04': 'Abril',
+    '05': 'Mayo',
+    '06': 'Junio',
+    '07': 'Julio',
+    '08': 'Agosto',
+    '09': 'Septiembre',
+    '10': 'Octubre',
+    '11': 'Noviembre',
+    '12': 'Diciembre'
+  };
 
   constructor(
     private fb: FormBuilder,
@@ -286,7 +383,10 @@ export class VentasBrutasComponent {
     this.searchForm = this.fb.group({
       rtn: ['', [Validators.required, Validators.pattern('^[0-9]{14}$')]],
       periodoDesde: ['', [Validators.required]],
-      periodoHasta: ['', [Validators.required]]
+      periodoHasta: ['', [Validators.required]],
+      // Campos adicionales para mostrar los periodos con formato
+      periodoDesdeDisplay: [''],
+      periodoHastaDisplay: ['']
     });
 
     // Generar períodos desde 2020 hasta 2025
@@ -298,6 +398,113 @@ export class VentasBrutasComponent {
         const periodo = `${year}${month.toString().padStart(2, '0')}`;
         this.periodosAgrupados[year].push(periodo);
       }
+    }
+
+    // Iniciar con el año actual
+    this.currentYear = new Date().getFullYear();
+    if (this.currentYear < startYear || this.currentYear > endYear) {
+      this.currentYear = startYear;
+    }
+  }
+
+  // Navegación del calendario
+  prevYear(): void {
+    if (this.currentYear > 2020) {
+      this.currentYear--;
+    }
+  }
+
+  nextYear(): void {
+    if (this.currentYear < 2025) {
+      this.currentYear++;
+    }
+  }
+
+  // Método para abrir/cerrar el calendario desde
+  toggleCalendarDesde(): void {
+    this.showCalendarDesde = !this.showCalendarDesde;
+    if (this.showCalendarDesde) {
+      this.showCalendarHasta = false;
+    }
+  }
+
+  // Método para abrir/cerrar el calendario hasta
+  toggleCalendarHasta(): void {
+    this.showCalendarHasta = !this.showCalendarHasta;
+    if (this.showCalendarHasta) {
+      this.showCalendarDesde = false;
+    }
+  }
+
+  // Seleccionar un mes para el período desde
+  selectMonthDesde(month: number): void {
+    const monthFormatted = month.toString().padStart(2, '0');
+    const periodo = `${this.currentYear}${monthFormatted}`;
+    this.searchForm.get('periodoDesde')?.setValue(periodo);
+    this.showCalendarDesde = false;
+    
+    // Resetear el periodo hasta cuando cambia el periodo desde
+    this.searchForm.get('periodoHasta')?.setValue('');
+    this.searchForm.get('periodoHastaDisplay')?.setValue('');
+  }
+
+  // Seleccionar un mes para el período hasta
+  selectMonthHasta(month: number): void {
+    const monthFormatted = month.toString().padStart(2, '0');
+    const periodo = `${this.currentYear}${monthFormatted}`;
+    this.searchForm.get('periodoHasta')?.setValue(periodo);
+    this.showCalendarHasta = false;
+  }
+
+  // Verificar si un mes debe estar deshabilitado en el selector "hasta"
+  isMonthDisabled(month: number): boolean {
+    const periodoDesde = this.searchForm.get('periodoDesde')?.value;
+    if (!periodoDesde) return true;
+    
+    const monthFormatted = month.toString().padStart(2, '0');
+    const periodoActual = `${this.currentYear}${monthFormatted}`;
+    
+    return periodoActual < periodoDesde;
+  }
+
+  // Formatear fecha para mostrar
+  formatDisplayDate(periodo: string): string {
+    if (!periodo) return '';
+    const year = periodo.substring(0, 4);
+    const month = periodo.substring(4, 6);
+    return `${this.nombresMeses[month]} ${year}`;
+  }
+
+  // Método para convertir número de mes a nombre
+  getNombreMes(numeroMes: string): string {
+    return this.nombresMeses[numeroMes] || numeroMes;
+  }
+
+  // Método para filtrar periodos disponibles basados en el periodo desde
+  getPeriodosDisponibles(): string[] {
+    const periodoDesde = this.searchForm.get('periodoDesde')?.value;
+    if (!periodoDesde) {
+      return [];
+    }
+
+    let todosLosPeriodos: string[] = [];
+    // Aplanar todos los periodos en un solo array
+    Object.keys(this.periodosAgrupados).forEach(year => {
+      todosLosPeriodos = [...todosLosPeriodos, ...this.periodosAgrupados[year]];
+    });
+
+    // Filtrar solo periodos mayores o iguales al periodo desde
+    return todosLosPeriodos.filter(periodo => periodo >= periodoDesde);
+  }
+
+  // Método que se llama cuando cambia el periodo desde
+  onPeriodoDesdeChange(): void {
+    // Resetear el periodo hasta cuando cambia el periodo desde
+    this.searchForm.get('periodoHasta')?.setValue('');
+    
+    // Si el periodo desde es válido, actualizar la lista de periodos disponibles
+    if (this.searchForm.get('periodoDesde')?.valid) {
+      this.periodosDisponibles = this.getPeriodosDisponibles();
     }
   }
 
@@ -362,9 +569,9 @@ export class VentasBrutasComponent {
 
       const { rtn, periodoDesde, periodoHasta } = this.searchForm.value;
       
-      // Convertir los períodos al formato requerido (YYYYMM)
-      const periodoDesdeFormatted = periodoDesde.replace('-', '');
-      const periodoHastaFormatted = periodoHasta.replace('-', '');
+      // Los periodos ya están en formato YYYYMM
+      const periodoDesdeFormatted = periodoDesde;
+      const periodoHastaFormatted = periodoHasta;
       const anio = periodoDesdeFormatted.substring(0, 4);
 
       // Guardar parámetros para posibles reintentos manuales

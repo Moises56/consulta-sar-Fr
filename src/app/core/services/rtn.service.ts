@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { RtnResponse, VentasBrutasResponse } from '../interfaces/rtn.interface';
+import { RtnResponse, VentasBrutasResponse, VentasBrutasRequest } from '../interfaces/rtn.interface';
 import { environment } from '../../../environments/environment';
 
 @Injectable({
@@ -19,11 +19,12 @@ export class RtnService {
   }
 
   consultarVentasBrutas(rtn: string, periodoDesde: string, periodoHasta: string): Observable<VentasBrutasResponse> {
-    return this.http.post<VentasBrutasResponse>(`${this.apiUrl}/ventas-brutas`, {
-      rtn,
-      periodoDesde,
-      periodoHasta
-    }, {
+    const request: VentasBrutasRequest = {
+      Rtn: rtn,
+      PeriodoDesde: periodoDesde,
+      PeriodoHasta: periodoHasta
+    };
+    return this.http.post<VentasBrutasResponse>(`${this.apiUrl}/ventas-brutas`, request, {
       withCredentials: true
     });
   }

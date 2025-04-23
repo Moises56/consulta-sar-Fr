@@ -7,11 +7,9 @@ export interface ObligadoTributario {
   email?: string;
 }
 
-export interface VentasBrutas {
-  rtn: string;
-  periodo: string;
-  monto: number;
-  fecha: string;
+export interface VentasBrutasData {
+  anio: string;
+  importeTotalVentas: number;
 }
 
 export interface RtnResponse {
@@ -23,7 +21,15 @@ export interface RtnResponse {
 }
 
 export interface VentasBrutasResponse {
-  data: VentasBrutas[];
+  data: {
+    ventasBrutas: VentasBrutasData;
+  };
   isSuccess: boolean;
   message: string | null;
+}
+
+export interface VentasBrutasRequest {
+  Rtn: string;
+  PeriodoDesde: string;
+  PeriodoHasta: string;
 }

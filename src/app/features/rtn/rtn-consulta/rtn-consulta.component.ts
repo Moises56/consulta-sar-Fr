@@ -4,6 +4,7 @@ import { RouterModule } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { RtnService } from '../../../core/services/rtn.service';
 import { ObligadoTributario } from '../../../core/interfaces/rtn.interface';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-rtn-consulta',
@@ -122,7 +123,8 @@ export class RtnConsultaComponent {
 
   constructor(
     private fb: FormBuilder,
-    private rtnService: RtnService
+    private rtnService: RtnService,
+    private toastr: ToastrService
   ) {
     this.searchForm = this.fb.group({
       rtn: ['', [Validators.required, Validators.pattern('^[0-9]{14}$')]]
@@ -139,17 +141,23 @@ export class RtnConsultaComponent {
         next: (response) => {
           if (response.isSuccess) {
             this.obligadoTributario = response.data.obligadoTributario;
+            this.toastr.success('Consulta realizada con éxito');
           } else {
-            this.error = response.message || 'No se encontró información para el RTN proporcionado';
+            this.toastr.warning(response.message || 'No se encontró información para el RTN proporcionado');
           }
           this.loading = false;
         },
         error: (error) => {
           console.error('Error consulting RTN:', error);
-          this.error = 'Ocurrió un error al consultar el RTN. Por favor intente nuevamente.';
+          this.toastr.error(error.error?.message || 'Ocurrió un error al consultar el RTN');
           this.loading = false;
         }
       });
+    } else {
+      // Mostrar errores de validación
+      if (this.searchForm.get('rtn')?.errors?.['pattern']) {
+        this.toastr.error('El RTN debe tener 14 dígitos');
+      }
     }
   }
 }

@@ -62,7 +62,8 @@
               "buildTarget": "consulta-SAR:build:production"
             },
             "development": {
-              "buildTarget": "consulta-SAR:build:development"
+              "buildTarget": "consulta-SAR:build:development",
+              "proxyConfig": "proxy.conf.json"
             }
           },
           "defaultConfiguration": "development"

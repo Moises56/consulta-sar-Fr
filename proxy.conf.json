@@ -1,0 +1,10 @@
+{
+  "/api": {
+    "target": "https://api.amdc.hn",
+    "secure": true,
+    "changeOrigin": true,
+    "pathRewrite": {
+      "^/api": ""
+    }
+  }
+}

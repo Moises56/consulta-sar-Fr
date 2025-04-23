@@ -1,9 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { RtnService } from '../../../core/services/rtn.service';
-import { VentasBrutas } from '../../../core/interfaces/rtn.interface';
+import { VentasBrutasData } from '../../../core/interfaces/rtn.interface';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-ventas-brutas',
@@ -41,8 +42,15 @@ import { VentasBrutas } from '../../../core/interfaces/rtn.interface';
 
               <div>
                 <label for="periodoDesde" class="block text-sm font-medium text-gray-700">Periodo Desde</label>
-                <input type="month" id="periodoDesde" formControlName="periodoDesde"
+                <select id="periodoDesde" formControlName="periodoDesde"
                   class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                  <option value="">Seleccione un periodo</option>
+                  <optgroup *ngFor="let year of getYears()" [label]="year">
+                    <option *ngFor="let periodo of periodosAgrupados[year]" [value]="periodo">
+                      {{year}}-{{periodo.slice(4)}}
+                    </option>
+                  </optgroup>
+                </select>
                 <div *ngIf="searchForm.get('periodoDesde')?.errors?.['required'] && searchForm.get('periodoDesde')?.touched"
                   class="text-red-500 text-sm mt-1">
                   El periodo inicial es requerido
@@ -51,8 +59,15 @@ import { VentasBrutas } from '../../../core/interfaces/rtn.interface';
 
               <div>
                 <label for="periodoHasta" class="block text-sm font-medium text-gray-700">Periodo Hasta</label>
-                <input type="month" id="periodoHasta" formControlName="periodoHasta"
+                <select id="periodoHasta" formControlName="periodoHasta"
                   class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                  <option value="">Seleccione un periodo</option>
+                  <optgroup *ngFor="let year of getYears()" [label]="year">
+                    <option *ngFor="let periodo of periodosAgrupados[year]" [value]="periodo">
+                      {{year}}-{{periodo.slice(4)}}
+                    </option>
+                  </optgroup>
+                </select>
                 <div *ngIf="searchForm.get('periodoHasta')?.errors?.['required'] && searchForm.get('periodoHasta')?.touched"
                   class="text-red-500 text-sm mt-1">
                   El periodo final es requerido
@@ -94,66 +109,20 @@ import { VentasBrutas } from '../../../core/interfaces/rtn.interface';
           </div>
         </div>
 
-        <!-- Results Table -->
-        <div *ngIf="ventasBrutas.length > 0" class="mt-6">
-          <div class="flex flex-col">
-            <div class="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-              <div class="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
-                <div class="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
-                  <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
-                      <tr>
-                        <th scope="col"
-                          class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          RTN
-                        </th>
-                        <th scope="col"
-                          class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Periodo
-                        </th>
-                        <th scope="col"
-                          class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Monto
-                        </th>
-                        <th scope="col"
-                          class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Fecha
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                      <tr *ngFor="let venta of ventasBrutas">
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                          {{venta.rtn}}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {{venta.periodo}}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {{venta.monto | number:'1.2-2'}}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {{venta.fecha | date:'shortDate'}}
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Summary -->
-          <div class="mt-4 bg-white shadow overflow-hidden sm:rounded-lg">
+        <!-- Results -->
+        <div *ngIf="ventasBrutas" class="mt-6">
+          <div class="bg-white shadow overflow-hidden sm:rounded-lg">
             <div class="px-4 py-5 sm:p-6">
-              <div class="text-sm text-gray-900">
-                <strong>Total de Ventas Brutas:</strong>
-                {{totalVentas | number:'1.2-2'}}
-              </div>
-              <div class="text-sm text-gray-900 mt-2">
-                <strong>Promedio Mensual:</strong>
-                {{promedioMensual | number:'1.2-2'}}
-              </div>
+              <dl class="grid grid-cols-1 gap-x-4 gap-y-8 sm:grid-cols-2">
+                <div class="sm:col-span-1">
+                  <dt class="text-sm font-medium text-gray-500">Año</dt>
+                  <dd class="mt-1 text-sm text-gray-900">{{ventasBrutas.anio}}</dd>
+                </div>
+                <div class="sm:col-span-1">
+                  <dt class="text-sm font-medium text-gray-500">Total de Ventas Brutas</dt>
+                  <dd class="mt-1 text-sm text-gray-900">L. {{totalVentas | number:'1.2-2'}}</dd>
+                </div>
+              </dl>
             </div>
           </div>
         </div>
@@ -165,48 +134,72 @@ export class VentasBrutasComponent {
   searchForm: FormGroup;
   loading = false;
   error: string | null = null;
-  ventasBrutas: VentasBrutas[] = [];
+  ventasBrutas: VentasBrutasData | null = null;
+
+  periodosAgrupados: { [key: string]: string[] } = {};
 
   constructor(
     private fb: FormBuilder,
-    private rtnService: RtnService
+    private rtnService: RtnService,
+    private toastr: ToastrService
   ) {
     this.searchForm = this.fb.group({
       rtn: ['', [Validators.required, Validators.pattern('^[0-9]{14}$')]],
       periodoDesde: ['', [Validators.required]],
       periodoHasta: ['', [Validators.required]]
     });
+
+    // Generar períodos desde 2020 hasta 2025
+    const startYear = 2020;
+    const endYear = 2025;
+    for (let year = startYear; year <= endYear; year++) {
+      this.periodosAgrupados[year] = [];
+      for (let month = 1; month <= 12; month++) {
+        const periodo = `${year}${month.toString().padStart(2, '0')}`;
+        this.periodosAgrupados[year].push(periodo);
+      }
+    }
   }
 
   get totalVentas(): number {
-    return this.ventasBrutas.reduce((sum, venta) => sum + venta.monto, 0);
+    return this.ventasBrutas?.importeTotalVentas || 0;
   }
 
-  get promedioMensual(): number {
-    if (this.ventasBrutas.length === 0) return 0;
-    return this.totalVentas / this.ventasBrutas.length;
+  getYears(): string[] {
+    return Object.keys(this.periodosAgrupados).sort();
+  }
+
+  resetForm(): void {
+    this.searchForm.reset();
+    this.ventasBrutas = null;
+    this.error = null;
   }
 
   onSubmit(): void {
     if (this.searchForm.valid) {
       this.loading = true;
       this.error = null;
-      this.ventasBrutas = [];
+      this.ventasBrutas = null;
 
       const { rtn, periodoDesde, periodoHasta } = this.searchForm.value;
+      
+      // Convertir los períodos al formato requerido (YYYYMM)
+      const periodoDesdeFormatted = periodoDesde.replace('-', '');
+      const periodoHastaFormatted = periodoHasta.replace('-', '');
 
-      this.rtnService.consultarVentasBrutas(rtn, periodoDesde, periodoHasta).subscribe({
+      this.rtnService.consultarVentasBrutas(rtn, periodoDesdeFormatted, periodoHastaFormatted).subscribe({
         next: (response) => {
           if (response.isSuccess) {
-            this.ventasBrutas = response.data;
+            this.ventasBrutas = response.data.ventasBrutas;
+            this.toastr.success('Consulta realizada con éxito');
           } else {
-            this.error = response.message || 'No se encontraron datos para los criterios especificados';
+            this.toastr.warning(response.message || 'No se encontraron datos para los criterios especificados');
           }
           this.loading = false;
         },
         error: (error) => {
           console.error('Error consulting ventas brutas:', error);
-          this.error = 'Ocurrió un error al consultar las ventas brutas. Por favor intente nuevamente.';
+          this.toastr.error(error.error?.message || 'Ocurrió un error al consultar las ventas brutas');
           this.loading = false;
         }
       });

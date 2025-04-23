@@ -1,4 +1,5 @@
 import { Component, EventEmitter, Input, Output, CUSTOM_ELEMENTS_SCHEMA, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { RouterModule, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
@@ -152,8 +153,7 @@ export class SidebarComponent implements OnInit {
   @Output() toggleSidebar = new EventEmitter<void>();
 
   isMobile = false;
-
-  constructor(private authService: AuthService) {
+  constructor(private authService: AuthService, private router: Router) {
     // Detectar si es dispositivo móvil al inicio
     this.checkScreenSize();
 
@@ -174,12 +174,18 @@ export class SidebarComponent implements OnInit {
   }
 
   logout() {
-    // Emitir el evento de logout
-    this.onLogout.emit();
-    
     // Llamar al servicio de autenticación para hacer logout
-    this.authService.logout().subscribe(() => {
-      // La navegación se manejará en el app.component
+    this.authService.logout().subscribe({
+      next: () => {
+        // Emitir el evento de logout para que el componente padre maneje la navegación
+        this.onLogout.emit();
+      },
+      error: (error) => {
+        console.error('Error durante el cierre de sesión:', error);
+        // Si hay un error en el cierre de sesión, emitimos el evento igualmente
+        // para forzar la navegación al login y asegurar que el usuario salga
+        this.onLogout.emit();
+      }
     });
   }
 }

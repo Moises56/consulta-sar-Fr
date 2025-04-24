@@ -11,30 +11,30 @@ import { ToastrService } from 'ngx-toastr';
   standalone: true,
   imports: [CommonModule, RouterModule, ReactiveFormsModule],
   template: `
-    <div class="min-h-screen bg-gray-100">
-      <header class="bg-white shadow">
-        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-          <h2 class="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
+    <div class="min-h-screen bg-gray-50 w-full">
+      <header class="bg-white shadow-sm w-full">
+        <div class="w-full mx-auto py-4 px-4 sm:py-6 sm:px-6 lg:px-8">
+          <h2 class="text-xl font-bold text-gray-900 sm:text-2xl md:text-3xl">
             Consulta RTN
           </h2>
         </div>
       </header>
 
-      <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+      <main class="w-full mx-auto py-4 px-4 sm:py-6 sm:px-6 lg:px-8">
         <!-- Search Form -->
-        <div class="bg-white px-4 py-5 border-b border-gray-200 rounded-lg shadow-sm">
-          <form [formGroup]="searchForm" (ngSubmit)="onSubmit()">
-            <div class="flex flex-col md:flex-row gap-4 items-end">
-              <div class="flex-grow">
+        <div class="bg-white px-4 py-5 border-b border-gray-200 rounded-lg shadow-sm w-full">
+          <form [formGroup]="searchForm" (ngSubmit)="onSubmit()" class="w-full">
+            <div class="flex flex-col md:flex-row gap-4 items-end w-full">
+              <div class="flex-grow w-full">
                 <label for="rtn" class="block text-sm font-medium text-gray-700">RTN</label>
-                <div class="relative mt-1">
+                <div class="relative mt-1 w-full">
                   <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                     <svg class="w-5 h-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
                   </div>
                   <input type="text" id="rtn" formControlName="rtn"
-                    class="pl-10 mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                    class="pl-10 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                     placeholder="Ingrese el RTN a consultar (14 dígitos)">
                 </div>
                 <div *ngIf="searchForm.get('rtn')?.errors?.['required'] && searchForm.get('rtn')?.touched"
@@ -46,10 +46,10 @@ import { ToastrService } from 'ngx-toastr';
                   El RTN debe tener 14 dígitos
                 </div>
               </div>
-              <div class="flex gap-4">
+              <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
                 <button type="submit"
                   [disabled]="!searchForm.valid || loading"
-                  class="inline-flex items-center px-6 py-2.5 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50">
+                  class="w-full sm:w-auto flex items-center justify-center px-4 py-2.5 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 transition-colors duration-200">
                   <span *ngIf="isRetrying" class="mr-2">
                     <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                       <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -59,7 +59,7 @@ import { ToastrService } from 'ngx-toastr';
                   {{ loading ? (isRetrying ? 'Reintentando...' : 'Consultando...') : 'Consultar' }}
                 </button>
                 <a routerLink="ventas-brutas"
-                  class="inline-flex items-center px-4 py-2.5 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                  class="w-full sm:w-auto flex items-center justify-center px-4 py-2.5 border border-gray-300 rounded-md shadow-sm text-base font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200">
                   Consultar Ventas Brutas
                 </a>
               </div>
@@ -68,15 +68,15 @@ import { ToastrService } from 'ngx-toastr';
         </div>
 
         <!-- Retry Information -->
-        <div *ngIf="isRetrying" class="mt-6">
-          <div class="rounded-md bg-blue-50 p-4">
-            <div class="flex">
-              <div class="flex-shrink-0">
+        <div *ngIf="isRetrying" class="mt-4 sm:mt-6 w-full">
+          <div class="rounded-lg bg-blue-50 p-4">
+            <div class="flex flex-col sm:flex-row sm:items-center">
+              <div class="flex-shrink-0 self-center sm:self-auto">
                 <svg class="h-5 w-5 text-blue-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <div class="ml-3">
+              <div class="mt-3 sm:mt-0 sm:ml-3">
                 <h3 class="text-sm font-medium text-blue-800">Reintentos en progreso</h3>
                 <div class="mt-2 text-sm text-blue-700">
                   <p>Estamos experimentando alguna dificultad al conectar con el servidor. Reintentando automáticamente...</p>
@@ -88,18 +88,18 @@ import { ToastrService } from 'ngx-toastr';
         </div>
 
         <!-- Error Message -->
-        <div *ngIf="error" class="mt-6">
-          <div class="rounded-md bg-red-50 p-4">
-            <div class="flex">
-              <div class="flex-shrink-0">
+        <div *ngIf="error" class="mt-4 sm:mt-6 w-full">
+          <div class="rounded-lg bg-red-50 p-4">
+            <div class="flex flex-col sm:flex-row sm:items-center">
+              <div class="flex-shrink-0 self-center sm:self-auto">
                 <svg class="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                   <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
                 </svg>
               </div>
-              <div class="ml-3">
+              <div class="mt-3 sm:mt-0 sm:ml-3">
                 <h3 class="text-sm font-medium text-red-800">Error en la consulta</h3>
                 <div class="mt-2 text-sm text-red-700">
-                  <p>{{error}} <button *ngIf="canRetryManually" (click)="retryManually()" class="ml-2 text-indigo-600 underline">Reintentar</button></p>
+                  <p>{{error}} <button *ngIf="canRetryManually" (click)="retryManually()" class="ml-2 text-indigo-600 underline hover:text-indigo-800 transition-colors duration-200">Reintentar</button></p>
                 </div>
               </div>
             </div>
@@ -107,17 +107,17 @@ import { ToastrService } from 'ngx-toastr';
         </div>
 
         <!-- Results -->
-        <div *ngIf="obligadoTributario" class="mt-6">
-          <div class="bg-white shadow overflow-hidden sm:rounded-lg">
-            <div class="px-6 py-5 border-b border-gray-200">
-              <div class="flex justify-between items-center">
+        <div *ngIf="obligadoTributario" class="mt-4 sm:mt-6 w-full">
+          <div class="bg-white shadow-md overflow-hidden rounded-lg w-full">
+            <div class="px-4 py-5 border-b border-gray-200 sm:px-6">
+              <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center">
                 <div>
-                  <h3 class="text-xl font-bold text-gray-900">
+                  <h3 class="text-lg font-bold text-gray-900 line-clamp-2">
                     {{obligadoTributario.nombreComercial || obligadoTributario.nombre}}
                   </h3>
-                  <p class="mt-2 text-sm text-gray-500">RTN: <span class="font-semibold">{{obligadoTributario.rtn}}</span></p>
+                  <p class="mt-1 text-sm text-gray-500">RTN: <span class="font-semibold">{{obligadoTributario.rtn}}</span></p>
                 </div>
-                <div class="hidden sm:block">
+                <div class="mt-2 sm:mt-0">
                   <span class="inline-flex items-center px-3 py-0.5 rounded-full text-sm font-medium bg-green-100 text-green-800">
                     Activo
                   </span>
@@ -125,9 +125,9 @@ import { ToastrService } from 'ngx-toastr';
               </div>
             </div>
             
-            <div class="px-6 py-5 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="px-4 py-5 sm:px-6 grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
               <!-- Información General -->
-              <div class="bg-white rounded-lg border border-gray-200">
+              <div class="bg-white rounded-lg border border-gray-200 hover:shadow-md transition-shadow duration-200 w-full">
                 <div class="px-4 py-3 bg-gray-50 border-b border-gray-200">
                   <h4 class="text-lg font-medium text-gray-900">Información General</h4>
                 </div>
@@ -150,7 +150,7 @@ import { ToastrService } from 'ngx-toastr';
               </div>
               
               <!-- Ubicación -->
-              <div class="bg-white rounded-lg border border-gray-200">
+              <div class="bg-white rounded-lg border border-gray-200 hover:shadow-md transition-shadow duration-200 w-full">
                 <div class="px-4 py-3 bg-gray-50 border-b border-gray-200">
                   <h4 class="text-lg font-medium text-gray-900">Ubicación</h4>
                 </div>
@@ -168,14 +168,14 @@ import { ToastrService } from 'ngx-toastr';
               </div>
               
               <!-- Actividades Económicas -->
-              <div class="bg-white rounded-lg border border-gray-200 md:col-span-2">
+              <div class="bg-white rounded-lg border border-gray-200 md:col-span-2 hover:shadow-md transition-shadow duration-200 w-full">
                 <div class="px-4 py-3 bg-gray-50 border-b border-gray-200">
                   <h4 class="text-lg font-medium text-gray-900">Actividades Económicas</h4>
                 </div>
-                <div class="p-4">
-                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div *ngIf="obligadoTributario.actividadPrimaria">
-                      <div class="p-4 border border-gray-200 rounded-md">
+                <div class="p-4 w-full">
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
+                    <div *ngIf="obligadoTributario.actividadPrimaria" class="w-full">
+                      <div class="p-4 border border-gray-200 rounded-md hover:border-indigo-300 hover:shadow-sm transition-all duration-200 w-full">
                         <span class="text-sm font-medium text-gray-500 block">Actividad Principal</span>
                         <div class="flex items-center mt-2">
                           <div class="h-10 w-10 flex-shrink-0 bg-indigo-100 rounded-full flex items-center justify-center">
@@ -183,25 +183,25 @@ import { ToastrService } from 'ngx-toastr';
                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                             </svg>
                           </div>
-                          <div class="ml-4">
-                            <span class="text-sm text-gray-900 font-semibold block">{{obligadoTributario.actividadPrimaria.descripcion}}</span>
+                          <div class="ml-4 overflow-hidden w-full">
+                            <span class="text-sm text-gray-900 font-semibold block truncate">{{obligadoTributario.actividadPrimaria.descripcion}}</span>
                             <span class="text-sm text-gray-500 block">Código: {{obligadoTributario.actividadPrimaria.actividadId}}</span>
                           </div>
                         </div>
                       </div>
                     </div>
                     
-                    <div *ngIf="obligadoTributario.actividadSecundaria">
-                      <div class="p-4 border border-gray-200 rounded-md">
+                    <div *ngIf="obligadoTributario.actividadSecundaria" class="w-full">
+                      <div class="p-4 border border-gray-200 rounded-md hover:border-purple-300 hover:shadow-sm transition-all duration-200 w-full">
                         <span class="text-sm font-medium text-gray-500 block">Actividad Secundaria</span>
                         <div class="flex items-center mt-2">
                           <div class="h-10 w-10 flex-shrink-0 bg-purple-100 rounded-full flex items-center justify-center">
                             <svg class="h-6 w-6 text-purple-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                             </svg>
                           </div>
-                          <div class="ml-4">
-                            <span class="text-sm text-gray-900 font-semibold block">{{obligadoTributario.actividadSecundaria.descripcion}}</span>
+                          <div class="ml-4 overflow-hidden w-full">
+                            <span class="text-sm text-gray-900 font-semibold block truncate">{{obligadoTributario.actividadSecundaria.descripcion}}</span>
                             <span class="text-sm text-gray-500 block">Código: {{obligadoTributario.actividadSecundaria.actividadId}}</span>
                           </div>
                         </div>

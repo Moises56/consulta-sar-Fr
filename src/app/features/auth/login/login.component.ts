@@ -11,6 +11,10 @@ import { AuthService } from '../../../core/services/auth.service';
   template: `
     <div class="min-h-screen bg-gray-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div class="max-w-md w-full space-y-8">
+        <!-- logo esta en logos/logo2.png -->
+        <div>
+          <img class="mx-auto h-12 w-auto" src="logos/logo2.png " alt="Logo">
+        </div>
         <div>
           <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
             Iniciar Sesión
@@ -34,7 +38,7 @@ import { AuthService } from '../../../core/services/auth.service';
 
           <div>
             <button type="submit" [disabled]="!loginForm.valid"
-              class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50">
+              class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-[#5ccedf] hover:bg-[#4ab8e0] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50">
               Ingresar
             </button>
           </div>

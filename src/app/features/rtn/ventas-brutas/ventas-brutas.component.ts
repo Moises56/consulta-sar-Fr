@@ -8,6 +8,16 @@ import { VentasBrutasData, VentasBrutasResponse } from '../../../core/interfaces
 import { DatosAmdc } from '../../../core/interfaces/amdc.interface';
 import { ToastrService } from 'ngx-toastr';
 import { forkJoin, catchError, of } from 'rxjs';
+// Importaciones para exportación a PDF y Excel
+import * as XLSX from 'xlsx';
+// Importar AuthService para obtener el usuario actual
+import { AuthService } from '../../../core/services/auth.service';
+
+// Importamos pdfMake de forma compatible con TypeScript
+declare const pdfMake: any;
+// Necesario para que pdfmake funcione
+import 'pdfmake/build/pdfmake';
+import 'pdfmake/build/vfs_fonts';
 
 // Define el tipo para los resultados de la API con posibles errores
 type ApiSarResponse = VentasBrutasResponse | { isSuccess: boolean; message: string };
@@ -338,9 +348,25 @@ type CustomError = { status: number; message: string; isUserMessage: boolean };
             <div class="px-4 py-5 sm:px-6">
               <div class="flex justify-between items-center">
                 <h3 class="text-lg font-medium text-gray-900">Historial de consultas</h3>
-                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                  {{consultasRealizadas.length}} {{consultasRealizadas.length === 1 ? 'consulta' : 'consultas'}}
-                </span>
+                <div class="flex space-x-2">
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                    {{consultasRealizadas.length}} {{consultasRealizadas.length === 1 ? 'consulta' : 'consultas'}}
+                  </span>
+                  <div class="flex items-center space-x-2">
+                    <button (click)="exportToPDF()" class="inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                      </svg>
+                      PDF
+                    </button>
+                    <button (click)="exportToExcel()" class="inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                      Excel
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
             
@@ -466,7 +492,8 @@ export class VentasBrutasComponent {
     private fb: FormBuilder,
     private rtnService: RtnService,
     private amdcService: AmdcService,
-    private toastr: ToastrService
+    private toastr: ToastrService,
+    private authService: AuthService
   ) {
     this.searchForm = this.fb.group({
       rtn: ['', [Validators.required, Validators.pattern('^[0-9]{14}$')]],
@@ -772,5 +799,415 @@ export class VentasBrutasComponent {
         this.loading = false;
       }
     });
+  }
+
+  // Método para exportar el historial de consultas a PDF
+  exportToPDF(): void {
+    if (this.consultasRealizadas.length === 0) {
+      this.toastr.warning('No hay consultas para exportar');
+      return;
+    }
+
+    try {
+      // Rutas correctas de los logos
+      const logoPath = 'logos/logo.png';
+      const logoBuenCorazonPath = 'logos/logoBuenCorazon.png';
+      
+      // Cargar las imágenes primero
+      this.loadImageAsBase64(logoPath).then(logoData => {
+        this.loadImageAsBase64(logoBuenCorazonPath).then(logoBuenCorazonData => {
+          
+          // Crear el documento con los estilos
+          const docDefinition: any = {
+            pageSize: 'LETTER',
+            pageMargins: [40, 100, 40, 60], // Aumentamos el margen superior para dar espacio a los logos
+            header: {
+              columns: [
+                {
+                  image: logoData,
+                  width: 80,
+                  alignment: 'left',
+                  margin: [30, 20, 0, 0]
+                },
+                {
+                  text: 'Reporte Ventas Brutas',
+                  alignment: 'center',
+                  fontSize: 16,
+                  bold: true,
+                  margin: [0, 40, 0, 0]
+                },
+                {
+                  image: logoBuenCorazonData,
+                  width: 80,
+                  alignment: 'right',
+                  margin: [0, 20, 30, 0]
+                }
+              ]
+            },
+            footer: (currentPage: number, pageCount: number) => {
+              return {
+                text: `Página ${currentPage} de ${pageCount}`,
+                alignment: 'center',
+                fontSize: 8,
+                margin: [0, 10, 0, 0]
+              };
+            },
+            content: [],
+            styles: {
+              header: {
+                fontSize: 14,
+                bold: true,
+                margin: [0, 10, 0, 5]
+              },
+              subheader: {
+                fontSize: 12,
+                bold: true,
+                margin: [0, 10, 0, 5]
+              },
+              tableHeader: {
+                bold: true,
+                fontSize: 10,
+                color: 'black',
+                fillColor: '#f3f4f6',
+              },
+              tableCell: {
+                fontSize: 9
+              },
+              vigente: {
+                fontSize: 9,
+                color: '#059669'
+              },
+              rectificado: {
+                fontSize: 9,
+                color: '#DC2626'
+              },
+              diferenciaPositiva: {
+                fontSize: 9,
+                color: '#DC2626'
+              },
+              diferenciaNegativa: {
+                fontSize: 9,
+                color: '#059669'
+              },
+              diferenciaCero: {
+                fontSize: 9,
+                color: '#4B5563'
+              }
+            }
+          };
+
+          // Fecha y hora actual y usuario que generó
+          const now = new Date();
+          const currentUser = this.authService.currentUser;
+          
+          // Sección de información de generación
+          docDefinition.content.push({
+            columns: [
+              {
+                stack: [
+                  {
+                    text: `Generado: ${now.toLocaleDateString()} ${now.toLocaleTimeString()}`,
+                    fontSize: 8
+                  },
+                  {
+                    text: `Generado por: ${currentUser ? currentUser.name : 'Usuario del sistema'}`,
+                    fontSize: 8,
+                    margin: [0, 2, 0, 0]
+                  }
+                ],
+                alignment: 'right'
+              }
+            ],
+            margin: [0, 0, 0, 20]
+          });
+
+          // Iterar sobre todas las consultas e ir agregando secciones al PDF
+          this.consultasRealizadas.forEach((consulta, index) => {
+            // Datos generales de la empresa
+            if (consulta.amdc.length > 0) {
+              docDefinition.content.push({
+                text: `#Consulta ${index + 1} - ${consulta.amdc[0].NOMBRE_COMERCIAL}`,
+                style: 'header',
+                margin: [0, 10, 0, 0]
+              });
+
+              docDefinition.content.push({
+                text: `RTN: ${consulta.amdc[0].RTN} - Año: ${consulta.sar.anio}`,
+                style: 'subheader'
+              });
+            } else {
+              docDefinition.content.push({
+                text: `#Consulta ${index + 1}`,
+                style: 'header',
+                margin: [0, 10, 0, 0]
+              });
+            }
+
+            // Tabla con datos de SAR
+            docDefinition.content.push({
+              text: 'Información SAR',
+              style: 'subheader',
+              margin: [0, 10, 0, 5]
+            });
+
+            docDefinition.content.push({
+              table: {
+                headerRows: 1,
+                widths: ['*', '*'],
+                body: [
+                  [{ text: 'Concepto', style: 'tableHeader' }, { text: 'Valor', style: 'tableHeader' }],
+                  [{ text: 'Año', style: 'tableCell' }, { text: consulta.sar.anio, style: 'tableCell' }],
+                  [{ text: 'Total Ventas SAR', style: 'tableCell' }, { text: `L. ${consulta.sar.importeTotalVentas.toFixed(2)}`, style: 'tableCell' }]
+                ]
+              },
+              margin: [0, 5, 0, 15]
+            });
+
+            // Tabla con datos de AMDC
+            docDefinition.content.push({
+              text: 'Información AMDC',
+              style: 'subheader',
+              margin: [0, 10, 0, 5]
+            });
+
+            const amdcRows = [
+              [
+                { text: 'Cantidad Declarada', style: 'tableHeader' }, 
+                { text: 'Estatus', style: 'tableHeader' }, 
+                { text: 'Fecha', style: 'tableHeader' }
+              ]
+            ];
+
+            consulta.amdc.forEach(dato => {
+              amdcRows.push([
+                { text: `L. ${parseFloat(dato.CANTIDAD_DECLARADA).toFixed(2)}`, style: 'tableCell' },
+                { 
+                  text: dato.ESTATUS === 1 ? 'Vigente' : 'Rectificado', 
+                  style: dato.ESTATUS === 1 ? 'vigente' : 'rectificado'
+                },
+                { 
+                  text: new Date(dato.FECHA).toLocaleDateString(), 
+                  style: 'tableCell' 
+                }
+              ]);
+            });
+
+            docDefinition.content.push({
+              table: {
+                headerRows: 1,
+                widths: ['*', '*', '*'],
+                body: amdcRows
+              },
+              margin: [0, 5, 0, 15]
+            });
+
+            // Sección de diferencia
+            const totalDeclarado = consulta.amdc
+              .filter(dato => dato.ESTATUS === 1)
+              .reduce((total, dato) => total + parseFloat(dato.CANTIDAD_DECLARADA), 0);
+            
+            const diferencia = consulta.sar.importeTotalVentas - totalDeclarado;
+            let textoComparacion = '';
+            let estiloDiferencia = '';
+
+            if (diferencia > 0) {
+              textoComparacion = 'En contra de la AMDC (valor no declarado)';
+              estiloDiferencia = 'diferenciaPositiva';
+            } else if (diferencia < 0) {
+              textoComparacion = 'A favor de la AMDC (valor sobredeclarado)';
+              estiloDiferencia = 'diferenciaNegativa';
+            } else {
+              textoComparacion = 'Valores iguales (declaración correcta)';
+              estiloDiferencia = 'diferenciaCero';
+            }
+
+            docDefinition.content.push({
+              text: 'Análisis Comparativo',
+              style: 'subheader',
+              margin: [0, 10, 0, 5]
+            });
+
+            docDefinition.content.push({
+              table: {
+                headerRows: 1,
+                widths: ['*', '*'],
+                body: [
+                  [{ text: 'Diferencia', style: 'tableHeader' }, { text: 'Análisis', style: 'tableHeader' }],
+                  [
+                    { text: `L. ${Math.abs(diferencia).toFixed(2)}`, style: estiloDiferencia },
+                    { text: textoComparacion, style: estiloDiferencia }
+                  ]
+                ]
+              },
+              margin: [0, 5, 0, 15]
+            });
+
+            // Separador entre consultas excepto la última
+            if (index < this.consultasRealizadas.length - 1) {
+              docDefinition.content.push({
+                canvas: [{ type: 'line', x1: 0, y1: 5, x2: 515, y2: 5, lineWidth: 1, lineColor: '#e5e7eb' }],
+                margin: [0, 10, 0, 10]
+              });
+            }
+          });
+
+          // Generar el PDF
+          pdfMake.createPdf(docDefinition).download('reporte-ventas-brutas.pdf');
+          this.toastr.success('PDF generado con éxito');
+        }).catch(error => {
+          console.error('Error al cargar logoBuenCorazon:', error);
+          this.toastr.error('Error al generar el PDF: No se pudo cargar una de las imágenes');
+        });
+      }).catch(error => {
+        console.error('Error al cargar logo:', error);
+        this.toastr.error('Error al generar el PDF: No se pudo cargar una de las imágenes');
+      });
+    } catch (error) {
+      console.error('Error al generar PDF:', error);
+      this.toastr.error('Error al generar el PDF');
+    }
+  }
+
+  // Método auxiliar para cargar imágenes como base64
+  loadImageAsBase64(url: string): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = 'Anonymous'; // Necesario para permitir CORS
+      
+      img.onload = () => {
+        try {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          
+          canvas.width = img.width;
+          canvas.height = img.height;
+          
+          if (ctx) {
+            ctx.drawImage(img, 0, 0);
+            // Convertir a base64
+            const dataURL = canvas.toDataURL('image/png');
+            resolve(dataURL);
+          } else {
+            reject(new Error('No se pudo obtener el contexto del canvas'));
+          }
+        } catch (error) {
+          reject(error);
+        }
+      };
+      
+      img.onerror = (error) => {
+        reject(error);
+      };
+      
+      img.src = url;
+    });
+  }
+
+  // Método para exportar el historial de consultas a Excel
+  exportToExcel(): void {
+    if (this.consultasRealizadas.length === 0) {
+      this.toastr.warning('No hay consultas para exportar');
+      return;
+    }
+
+    try {
+      const datosExcel: any[] = [];
+
+      // Iterar sobre todas las consultas
+      this.consultasRealizadas.forEach((consulta, index) => {
+        // Determinar cuántas filas necesitamos para esta consulta
+        const filasNecesarias = Math.max(1, consulta.amdc.length);
+        
+        // Para cada registro de AMDC
+        for (let i = 0; i < filasNecesarias; i++) {
+          const fila: any = {};
+          
+          // Si es la primera fila de esta consulta, agregamos datos de SAR
+          if (i === 0) {
+            fila['#'] = index + 1;
+            fila['RTN'] = consulta.amdc.length > 0 ? consulta.amdc[0].RTN : 'N/A';
+            fila['Nombre Comercial'] = consulta.amdc.length > 0 ? consulta.amdc[0].NOMBRE_COMERCIAL : 'N/A';
+            fila['Año'] = consulta.sar.anio;
+            fila['Total Ventas SAR'] = consulta.sar.importeTotalVentas;
+          } else {
+            fila['#'] = '';
+            fila['RTN'] = '';
+            fila['Nombre Comercial'] = '';
+            fila['Año'] = '';
+            fila['Total Ventas SAR'] = '';
+          }
+          
+          // Datos de AMDC si hay registro para esta fila
+          if (i < consulta.amdc.length) {
+            const dato = consulta.amdc[i];
+            fila['Cantidad Declarada'] = parseFloat(dato.CANTIDAD_DECLARADA);
+            fila['Estatus'] = dato.ESTATUS === 1 ? 'Vigente' : 'Rectificado';
+            fila['Fecha Declaración'] = new Date(dato.FECHA).toLocaleDateString();
+          } else {
+            fila['Cantidad Declarada'] = '';
+            fila['Estatus'] = '';
+            fila['Fecha Declaración'] = '';
+          }
+          
+          // Si es la primera fila de esta consulta, agregamos la diferencia
+          if (i === 0) {
+            const totalDeclarado = consulta.amdc
+              .filter(dato => dato.ESTATUS === 1)
+              .reduce((total, dato) => total + parseFloat(dato.CANTIDAD_DECLARADA), 0);
+            
+            const diferencia = consulta.sar.importeTotalVentas - totalDeclarado;
+            fila['Diferencia'] = Math.abs(diferencia);
+            
+            if (diferencia > 0) {
+              fila['Análisis'] = 'En contra de la AMDC (valor no declarado)';
+            } else if (diferencia < 0) {
+              fila['Análisis'] = 'A favor de la AMDC (valor sobredeclarado)';
+            } else {
+              fila['Análisis'] = 'Valores iguales (declaración correcta)';
+            }
+          } else {
+            fila['Diferencia'] = '';
+            fila['Análisis'] = '';
+          }
+          
+          datosExcel.push(fila);
+        }
+        
+        // Agregar fila vacía entre consultas excepto la última
+        if (index < this.consultasRealizadas.length - 1) {
+          datosExcel.push({});
+        }
+      });
+
+      // Crear una nueva hoja de cálculo
+      const worksheet: XLSX.WorkSheet = XLSX.utils.json_to_sheet(datosExcel);
+      
+      // Configurar anchos de columnas
+      const wscols = [
+        { wch: 5 },      // #
+        { wch: 20 },     // RTN
+        { wch: 30 },     // Nombre Comercial
+        { wch: 10 },     // Año
+        { wch: 15 },     // Total Ventas SAR
+        { wch: 15 },     // Cantidad Declarada
+        { wch: 12 },     // Estatus
+        { wch: 15 },     // Fecha Declaración
+        { wch: 15 },     // Diferencia
+        { wch: 40 }      // Análisis
+      ];
+      
+      worksheet['!cols'] = wscols;
+      
+      // Crear un libro de trabajo y añadir la hoja
+      const workbook: XLSX.WorkBook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Historial Consultas');
+      
+      // Generar el archivo Excel y descargarlo
+      XLSX.writeFile(workbook, 'historial-consultas-ventas-brutas.xlsx');
+      this.toastr.success('Excel generado con éxito');
+    } catch (error) {
+      console.error('Error al generar Excel:', error);
+      this.toastr.error('Error al generar el Excel');
+    }
   }
 }

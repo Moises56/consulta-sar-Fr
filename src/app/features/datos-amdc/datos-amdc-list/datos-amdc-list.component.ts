@@ -73,11 +73,27 @@ import { DatosAMDC } from '../../../core/interfaces/datos-amdc.interface';
                       </th>
                       <th scope="col"
                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        ICS
+                      </th>
+                      <th scope="col"
+                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Nombre Comercial
                       </th>
                       <th scope="col"
                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Nombre
+                      </th>
+                      <th scope="col"
+                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Año
+                      </th>
+                      <th scope="col"
+                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Cantidad
+                      </th>
+                      <th scope="col"
+                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Estatus
                       </th>
                       <th scope="col" class="relative px-6 py-3">
                         <span class="sr-only">Acciones</span>
@@ -90,14 +106,36 @@ import { DatosAMDC } from '../../../core/interfaces/datos-amdc.interface';
                         <div class="text-sm text-gray-900">{{ dato.RTN }}</div>
                       </td>
                       <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-900">{{ dato.ICS }}</div>
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap">
                         <div class="text-sm text-gray-900">{{ dato.NOMBRE_COMERCIAL }}</div>
                       </td>
                       <td class="px-6 py-4 whitespace-nowrap">
                         <div class="text-sm text-gray-900">{{ dato.NOMBRE }}</div>
                       </td>
+                      <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-900">{{ dato.ANIO }}</div>
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-900">{{ dato.CANTIDAD_DECLARADA | number:'1.2-2' }}</div>
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-900">{{ dato.ESTATUS }}</div>
+                      </td>
                       <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <a [routerLink]="[dato.id]" class="text-indigo-600 hover:text-indigo-900 mr-4">Editar</a>
-                        <button (click)="deleteDatoAmdc(dato.id)" class="text-red-600 hover:text-red-900">Eliminar</button>
+                        <a [routerLink]="[dato.id]" class="text-indigo-600 hover:text-indigo-900 mr-4 inline-flex items-center">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 0L11.828 15H9v-2.828l8.586-8.586z" />
+                          </svg>
+                          <!-- Editar -->
+                        </a>
+                        <button (click)="deleteDatoAmdc(dato.id)" class="text-red-600 hover:text-red-900 inline-flex items-center">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                          <!-- Eliminar -->
+                        </button>
                       </td>
                     </tr>
                   </tbody>
@@ -128,17 +166,24 @@ import { DatosAMDC } from '../../../core/interfaces/datos-amdc.interface';
               </dl>
             </div>
             <div class="px-4 py-3 bg-gray-50 flex gap-4">
+              <button (click)="openModal(dato)" class="text-sm text-blue-600 hover:text-blue-900 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+                <!-- Ver -->
+              </button>
               <a [routerLink]="[dato.id]" class="text-sm text-indigo-600 hover:text-indigo-900 flex items-center">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 0L11.828 15H9v-2.828l8.586-8.586z" />
                 </svg>
-                Editar
+                <!-- Editar -->
               </a>
               <button (click)="deleteDatoAmdc(dato.id)" class="text-sm text-red-600 hover:text-red-900 flex items-center">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                 </svg>
-                Eliminar
+                <!-- Eliminar -->
               </button>
             </div>
           </div>
@@ -148,12 +193,21 @@ import { DatosAMDC } from '../../../core/interfaces/datos-amdc.interface';
         <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 mt-4 md:mt-6 md:rounded-lg">
           <div class="flex-1 flex justify-between sm:hidden">
             <button (click)="previousPage()" [disabled]="currentPage === 1"
-              class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
-              Anterior
+              class="relative inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+              <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+              </svg>
+              <span class="sr-only">Anterior</span>
             </button>
             <button (click)="nextPage()" [disabled]="!hasNextPage"
-              class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
-              Siguiente
+              class="ml-3 relative inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+              <span class="sr-only">Siguiente</span>
+              <!-- <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 011.414-1.414l4 4a1 1 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+              </svg> -->
+              <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+              </svg>
             </button>
           </div>
           <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
@@ -167,32 +221,112 @@ import { DatosAMDC } from '../../../core/interfaces/datos-amdc.interface';
             <div>
               <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
                 <button (click)="previousPage()" [disabled]="currentPage === 1"
-                  class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-                  <span class="sr-only">Anterior</span>
-                  <!-- Heroicon name: solid/chevron-left -->
-                  <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
-                    aria-hidden="true">
-                    <path fill-rule="evenodd"
-                      d="M12.707 5.293a1 1 010 1.414L9.414 10l3.293 3.293a1 1 01-1.414 1.414l-4-4a1 1 010-1.414l4-4a1 1 011.414 0z"
-                      clip-rule="evenodd" />
+                  class="relative inline-flex justify-center items-center px-4 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 min-w-[40px]">
+                  <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
                   </svg>
+                  <span class="sr-only">Anterior</span>
                 </button>
                 <button (click)="nextPage()" [disabled]="!hasNextPage"
-                  class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                  class="relative inline-flex justify-center items-center px-4 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 min-w-[40px]">
                   <span class="sr-only">Siguiente</span>
-                  <!-- Heroicon name: solid/chevron-right -->
-                  <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
-                    aria-hidden="true">
-                    <path fill-rule="evenodd"
-                      d="M7.293 14.707a1 1 010-1.414L10.586 10 7.293 6.707a1 1 011.414-1.414l4 4a1 1 010 1.414l-4 4a1 1 01-1.414 0z"
-                      clip-rule="evenodd" />
-                  </svg>
+                  <!-- <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 011.414-1.414l4 4a1 1 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                  </svg> -->
+                  <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+              </svg>
                 </button>
               </nav>
             </div>
           </div>
         </div>
       </main>
+    </div>
+
+    <!-- Modal for Mobile View - Improved design -->
+    <div *ngIf="isModalOpen" class="fixed inset-0 overflow-y-auto z-50 md:hidden">
+      <div class="flex items-center justify-center min-h-screen px-4">
+        <div class="fixed inset-0 transition-opacity" aria-hidden="true" (click)="closeModal()">
+          <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+        </div>
+
+        <!-- Modal panel -->
+        <div class="bg-gray-100 rounded-lg shadow-xl w-full max-w-sm relative z-10">
+          <!-- Top bar with title -->
+          <div class="px-4 py-3 bg-white rounded-t-lg">
+            <div class="flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+            <h3 class="mt-1 text-center text-lg font-medium text-gray-700">
+              Nombre Comercial
+            </h3>
+          </div>
+          
+          <!-- Content -->
+          <div class="px-4 py-3">
+            <h4 class="text-center text-xl font-medium text-gray-800 mb-4">
+              {{ selectedDato?.NOMBRE_COMERCIAL }}
+            </h4>
+            
+            <div class="flex flex-col space-y-1 mb-4">
+              <p class="text-center text-sm text-gray-800 font-medium">RTN</p>
+              <p class="text-center text-gray-700">{{ selectedDato?.RTN }}</p>
+            </div>
+
+            <div class="flex flex-col space-y-1 border-t border-gray-200 pt-3 mb-4">
+              <p class="text-center text-sm text-gray-800 font-medium">Nombre</p>
+              <p class="text-center text-gray-700">{{ selectedDato?.NOMBRE }}</p>
+            </div>
+            
+            <div class="flex flex-col space-y-1 border-t border-gray-200 pt-3 mb-4">
+              <p class="text-center text-sm text-gray-800 font-medium">ICS</p>
+              <p class="text-center text-gray-700">{{ selectedDato?.ICS }}</p>
+            </div>
+            
+            <div class="flex flex-col space-y-1 border-t border-gray-200 pt-3 mb-4">
+              <p class="text-center text-sm text-gray-800 font-medium">Año</p>
+              <p class="text-center text-gray-700">{{ selectedDato?.ANIO }}</p>
+            </div>
+            
+            <div class="flex flex-col space-y-1 border-t border-gray-200 pt-3 mb-4">
+              <p class="text-center text-sm text-gray-800 font-medium">Cantidad Declarada</p>
+              <p class="text-center text-gray-700">{{ selectedDato?.CANTIDAD_DECLARADA | number:'1.2-2' }}</p>
+            </div>
+
+            <div class="flex flex-col space-y-1 border-t border-gray-200 pt-3 mb-4">
+              <p class="text-center text-sm text-gray-800 font-medium">Estatus</p>
+              <p class="text-center text-gray-700">{{ selectedDato?.ESTATUS }}</p>
+            </div>
+
+            <div class="flex flex-col space-y-1 border-t border-gray-200 pt-3 mb-4">
+              <p class="text-center text-sm text-gray-800 font-medium">Fecha</p>
+              <p class="text-center text-gray-700">{{ selectedDato?.FECHA | date:'dd/MM/yyyy' }}</p>
+            </div>
+
+            <div class="flex flex-col space-y-1 border-t border-gray-200 pt-3 mb-4">
+              <p class="text-center text-sm text-gray-800 font-medium">Creado en</p>
+              <p class="text-center text-gray-700">{{ selectedDato?.createdAt | date:'dd/MM/yyyy' }}</p>
+            </div>
+
+            <div class="flex flex-col space-y-1 border-t border-gray-200 pt-3 mb-4">
+              <p class="text-center text-sm text-gray-800 font-medium">Última actualización</p>
+              <p class="text-center text-gray-700">{{ selectedDato?.updatedAt | date:'dd/MM/yyyy' }}</p>
+            </div>
+          </div>
+          
+          <!-- Bottom button -->
+          <div class="border-t border-gray-200">
+            <div class="flex justify-center p-2">
+              <button (click)="closeModal()" class="w-full py-3 px-4 bg-white text-indigo-600 font-medium rounded-md">
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   `
 })
@@ -204,6 +338,10 @@ export class DatosAmdcListComponent implements OnInit {
   totalItems = 0;
   hasNextPage = false;
   Math = Math; // Make Math available in template
+  
+  // Modal variables
+  isModalOpen = false;
+  selectedDato: DatosAMDC | null = null;
 
   constructor(
     private datosAmdcService: DatosAMDCService,
@@ -221,13 +359,20 @@ export class DatosAmdcListComponent implements OnInit {
   }
 
   loadDatosAmdc(): void {
-    const filters = {
-      ...this.filterForm.value,
-      page: this.currentPage,
-      limit: this.pageSize
-    };
+    // Crear objeto de filtros mapeando los nombres de campos correctamente
+    const filters: any = {};
+    if (this.filterForm.value.rtn) {
+      filters.RTN = this.filterForm.value.rtn;
+    }
+    if (this.filterForm.value.nombreComercial) {
+      filters.NOMBRE_COMERCIAL = this.filterForm.value.nombreComercial;
+    }
+    if (this.filterForm.value.nombre) {
+      filters.NOMBRE = this.filterForm.value.nombre;
+    }
 
-    this.datosAmdcService.getDatosAMDC(filters).subscribe({
+    // Llamar al servicio con los parámetros separados para page y limit
+    this.datosAmdcService.getDatosAMDC(filters, this.currentPage, this.pageSize).subscribe({
       next: (response: { data: DatosAMDC[], meta: { total: number, page: number, limit: number } }) => {
         this.datosAmdc = response.data;
         this.totalItems = response.meta.total;
@@ -271,5 +416,16 @@ export class DatosAmdcListComponent implements OnInit {
         }
       });
     }
+  }
+
+  // Modal functions
+  openModal(dato: DatosAMDC): void {
+    this.selectedDato = dato;
+    this.isModalOpen = true;
+  }
+
+  closeModal(): void {
+    this.isModalOpen = false;
+    this.selectedDato = null;
   }
 }

@@ -10,9 +10,9 @@ import { User } from '../../../core/interfaces/user.interface';
   standalone: true,
   imports: [CommonModule, RouterModule, ReactiveFormsModule],
   template: `
-    <div class="min-h-screen bg-gray-100">
-      <header class="bg-white shadow">
-        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+    <div class="min-h-screen bg-gray-100 w-full">
+      <header class="bg-white shadow w-full">
+        <div class="w-full py-6 px-2 sm:px-6">
           <div class="md:flex md:items-center md:justify-between">
             <div class="flex-1 min-w-0">
               <h2 class="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
@@ -21,7 +21,7 @@ import { User } from '../../../core/interfaces/user.interface';
             </div>
             <div class="mt-4 flex md:mt-0 md:ml-4">
               <a routerLink="new"
-                class="ml-3 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                 Nuevo Usuario
               </a>
             </div>
@@ -29,9 +29,9 @@ import { User } from '../../../core/interfaces/user.interface';
         </div>
       </header>
 
-      <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+      <main class="w-full py-4 px-2 md:py-6 md:px-4">
         <!-- Filters -->
-        <div class="bg-white px-4 py-5 border-b border-gray-200 sm:px-6">
+        <div class="bg-white px-3 py-4 md:px-4 md:py-5 md:rounded-lg shadow-sm">
           <form [formGroup]="filterForm" (ngSubmit)="onFilter()">
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4">
               <div>
@@ -64,10 +64,10 @@ import { User } from '../../../core/interfaces/user.interface';
           </form>
         </div>
 
-        <!-- Users Table -->
-        <div class="flex flex-col mt-6">
-          <div class="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-            <div class="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
+        <!-- Desktop Users Table - Visible only on medium screens and up -->
+        <div class="hidden md:flex flex-col mt-6">
+          <div class="-my-2 overflow-x-auto -mx-4">
+            <div class="py-2 align-middle inline-block min-w-full px-4">
               <div class="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
                 <table class="min-w-full divide-y divide-gray-200">
                   <thead class="bg-gray-50">
@@ -128,9 +128,64 @@ import { User } from '../../../core/interfaces/user.interface';
             </div>
           </div>
         </div>
+        
+        <!-- Mobile Card View - Visible only on small screens -->
+        <div class="md:hidden mt-4 space-y-3">
+          <div *ngFor="let user of users" class="bg-white shadow-sm w-full">
+            <div class="px-4 py-3 bg-white flex justify-between items-center border-b">
+              <h3 class="text-lg font-medium text-gray-900">
+                {{user.username}}
+              </h3>
+              <span
+                class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full"
+                [ngClass]="{
+                  'bg-green-100 text-green-800': user.role === 'ADMIN',
+                  'bg-blue-100 text-blue-800': user.role === 'OPERADOR'
+                }">
+                {{user.role}}
+              </span>
+            </div>
+            <div class="px-4 py-2">
+              <dl>
+                <div class="py-2 flex flex-col">
+                  <dt class="text-sm font-medium text-gray-500">Email</dt>
+                  <dd class="mt-1 text-sm text-gray-900">{{user.email}}</dd>
+                </div>
+                <div class="py-2 flex flex-col">
+                  <dt class="text-sm font-medium text-gray-500">No. Empleado</dt>
+                  <dd class="mt-1 text-sm text-gray-900">{{user.Nempleado || 'No asignado'}}</dd>
+                </div>
+                <div *ngIf="user.gerencia" class="py-2 flex flex-col">
+                  <dt class="text-sm font-medium text-gray-500">Gerencia</dt>
+                  <dd class="mt-1 text-sm text-gray-900">{{user.gerencia}}</dd>
+                </div>
+              </dl>
+            </div>
+            <div class="px-4 py-3 bg-gray-50 flex flex-wrap gap-2">
+              <a [routerLink]="[user.id]" class="text-sm text-indigo-600 hover:text-indigo-900 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 0L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+                Editar
+              </a>
+              <a [routerLink]="[user.id, 'password']" class="text-sm text-yellow-600 hover:text-yellow-900 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                </svg>
+                Cambiar Contraseña
+              </a>
+              <button (click)="deleteUser(user.id)" class="text-sm text-red-600 hover:text-red-900 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+                Eliminar
+              </button>
+            </div>
+          </div>
+        </div>
 
         <!-- Pagination -->
-        <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+        <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 mt-4 md:mt-6 md:rounded-lg">
           <div class="flex-1 flex justify-between sm:hidden">
             <button (click)="previousPage()" [disabled]="currentPage === 1"
               class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">

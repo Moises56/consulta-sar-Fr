@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { DatosAMDCService } from '../../../core/services/datos-amdc.service';
-import { AuthService } from '../../../core/services/auth.service';
 import { DatosAMDC } from '../../../core/interfaces/datos-amdc.interface';
 
 @Component({
@@ -11,18 +10,18 @@ import { DatosAMDC } from '../../../core/interfaces/datos-amdc.interface';
   standalone: true,
   imports: [CommonModule, RouterModule, ReactiveFormsModule],
   template: `
-    <div class="min-h-screen bg-gray-100">
-      <header class="bg-white shadow">
-        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+    <div class="min-h-screen bg-gray-100 w-full">
+      <header class="bg-white shadow w-full">
+        <div class="w-full py-6 px-2 sm:px-6">
           <div class="md:flex md:items-center md:justify-between">
             <div class="flex-1 min-w-0">
               <h2 class="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
                 Datos AMDC
               </h2>
             </div>
-            <div class="mt-4 flex md:mt-0 md:ml-4" *ngIf="isAdmin">
+            <div class="mt-4 flex md:mt-0 md:ml-4">
               <a routerLink="new"
-                class="ml-3 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                 Nuevo Registro
               </a>
             </div>
@@ -30,52 +29,27 @@ import { DatosAMDC } from '../../../core/interfaces/datos-amdc.interface';
         </div>
       </header>
 
-      <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+      <main class="w-full py-4 px-2 md:py-6 md:px-4">
         <!-- Filters -->
-        <div class="bg-white px-4 py-5 border-b border-gray-200 sm:px-6">
+        <div class="bg-white px-3 py-4 md:px-4 md:py-5 md:rounded-lg shadow-sm">
           <form [formGroup]="filterForm" (ngSubmit)="onFilter()">
-            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
               <div>
-                <label for="RTN" class="block text-sm font-medium text-gray-700">RTN</label>
-                <input type="text" id="RTN" formControlName="RTN"
+                <label for="rtn" class="block text-sm font-medium text-gray-700">RTN</label>
+                <input type="text" id="rtn" formControlName="rtn"
                   class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
               </div>
-
               <div>
-                <label for="ICS" class="block text-sm font-medium text-gray-700">ICS</label>
-                <input type="text" id="ICS" formControlName="ICS"
+                <label for="nombreComercial" class="block text-sm font-medium text-gray-700">Nombre Comercial</label>
+                <input type="text" id="nombreComercial" formControlName="nombreComercial"
                   class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
               </div>
-
               <div>
-                <label for="ANIO" class="block text-sm font-medium text-gray-700">Año</label>
-                <input type="number" id="ANIO" formControlName="ANIO"
+                <label for="nombre" class="block text-sm font-medium text-gray-700">Nombre</label>
+                <input type="text" id="nombre" formControlName="nombre"
                   class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
-              </div>
-
-              <div>
-                <label for="NOMBRE" class="block text-sm font-medium text-gray-700">Nombre</label>
-                <input type="text" id="NOMBRE" formControlName="NOMBRE"
-                  class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
-              </div>
-
-              <div>
-                <label for="NOMBRE_COMERCIAL" class="block text-sm font-medium text-gray-700">Nombre Comercial</label>
-                <input type="text" id="NOMBRE_COMERCIAL" formControlName="NOMBRE_COMERCIAL"
-                  class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
-              </div>
-
-              <div>
-                <label for="ESTATUS" class="block text-sm font-medium text-gray-700">Estatus</label>
-                <select id="ESTATUS" formControlName="ESTATUS"
-                  class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                  <option value="">Todos</option>
-                  <option value="1">Activo</option>
-                  <option value="0">Inactivo</option>
-                </select>
               </div>
             </div>
-
             <div class="mt-4 flex justify-end">
               <button type="submit"
                 class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
@@ -85,10 +59,10 @@ import { DatosAMDC } from '../../../core/interfaces/datos-amdc.interface';
           </form>
         </div>
 
-        <!-- Data Table -->
-        <div class="flex flex-col mt-6">
-          <div class="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-            <div class="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
+        <!-- Desktop Table - Visible only on medium screens and up -->
+        <div class="hidden md:flex flex-col mt-6">
+          <div class="-my-2 overflow-x-auto -mx-4">
+            <div class="py-2 align-middle inline-block min-w-full px-4">
               <div class="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
                 <table class="min-w-full divide-y divide-gray-200">
                   <thead class="bg-gray-50">
@@ -99,23 +73,11 @@ import { DatosAMDC } from '../../../core/interfaces/datos-amdc.interface';
                       </th>
                       <th scope="col"
                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        ICS
+                        Nombre Comercial
                       </th>
                       <th scope="col"
                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Nombre
-                      </th>
-                      <th scope="col"
-                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Año
-                      </th>
-                      <th scope="col"
-                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Cantidad Declarada
-                      </th>
-                      <th scope="col"
-                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Estatus
                       </th>
                       <th scope="col" class="relative px-6 py-3">
                         <span class="sr-only">Acciones</span>
@@ -123,40 +85,19 @@ import { DatosAMDC } from '../../../core/interfaces/datos-amdc.interface';
                     </tr>
                   </thead>
                   <tbody class="bg-white divide-y divide-gray-200">
-                    <tr *ngFor="let dato of datos">
-                      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {{dato.RTN}}
-                      </td>
-                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {{dato.ICS}}
-                      </td>
-                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {{dato.NOMBRE}}
-                      </td>
-                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {{dato.ANIO}}
-                      </td>
-                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {{dato.CANTIDAD_DECLARADA | number:'1.2-2'}}
+                    <tr *ngFor="let dato of datosAmdc">
+                      <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-900">{{ dato.RTN }}</div>
                       </td>
                       <td class="px-6 py-4 whitespace-nowrap">
-                        <span
-                          class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
-                          [ngClass]="{
-                            'bg-green-100 text-green-800': dato.ESTATUS === 1,
-                            'bg-red-100 text-red-800': dato.ESTATUS === 0
-                          }">
-                          {{dato.ESTATUS === 1 ? 'Activo' : 'Inactivo'}}
-                        </span>
+                        <div class="text-sm text-gray-900">{{ dato.NOMBRE_COMERCIAL }}</div>
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-900">{{ dato.NOMBRE }}</div>
                       </td>
                       <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <ng-container *ngIf="isAdmin">
-                          <a [routerLink]="[dato.id]" class="text-indigo-600 hover:text-indigo-900 mr-4">Editar</a>
-                          <button (click)="deleteDato(dato.id)" class="text-red-600 hover:text-red-900">Eliminar</button>
-                        </ng-container>
-                        <ng-container *ngIf="!isAdmin">
-                          <a [routerLink]="[dato.id]" class="text-indigo-600 hover:text-indigo-900">Ver</a>
-                        </ng-container>
+                        <a [routerLink]="[dato.id]" class="text-indigo-600 hover:text-indigo-900 mr-4">Editar</a>
+                        <button (click)="deleteDatoAmdc(dato.id)" class="text-red-600 hover:text-red-900">Eliminar</button>
                       </td>
                     </tr>
                   </tbody>
@@ -166,8 +107,45 @@ import { DatosAMDC } from '../../../core/interfaces/datos-amdc.interface';
           </div>
         </div>
 
+        <!-- Mobile Card View - Visible only on small screens -->
+        <div class="md:hidden mt-4 space-y-3">
+          <div *ngFor="let dato of datosAmdc" class="bg-white shadow-sm w-full">
+            <div class="px-4 py-3 bg-white flex justify-between items-center border-b">
+              <h3 class="text-lg font-medium text-gray-900">
+                {{ dato.NOMBRE_COMERCIAL }}
+              </h3>
+            </div>
+            <div class="px-4 py-2">
+              <dl>
+                <div class="py-2 flex flex-col">
+                  <dt class="text-sm font-medium text-gray-500">RTN</dt>
+                  <dd class="mt-1 text-sm text-gray-900">{{ dato.RTN }}</dd>
+                </div>
+                <div class="py-2 flex flex-col">
+                  <dt class="text-sm font-medium text-gray-500">Nombre</dt>
+                  <dd class="mt-1 text-sm text-gray-900">{{ dato.NOMBRE }}</dd>
+                </div>
+              </dl>
+            </div>
+            <div class="px-4 py-3 bg-gray-50 flex gap-4">
+              <a [routerLink]="[dato.id]" class="text-sm text-indigo-600 hover:text-indigo-900 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 0L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+                Editar
+              </a>
+              <button (click)="deleteDatoAmdc(dato.id)" class="text-sm text-red-600 hover:text-red-900 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+                Eliminar
+              </button>
+            </div>
+          </div>
+        </div>
+
         <!-- Pagination -->
-        <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+        <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 mt-4 md:mt-6 md:rounded-lg">
           <div class="flex-1 flex justify-between sm:hidden">
             <button (click)="previousPage()" [disabled]="currentPage === 1"
               class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
@@ -195,7 +173,7 @@ import { DatosAMDC } from '../../../core/interfaces/datos-amdc.interface';
                   <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
                     aria-hidden="true">
                     <path fill-rule="evenodd"
-                      d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
+                      d="M12.707 5.293a1 1 010 1.414L9.414 10l3.293 3.293a1 1 01-1.414 1.414l-4-4a1 1 010-1.414l4-4a1 1 011.414 0z"
                       clip-rule="evenodd" />
                   </svg>
                 </button>
@@ -206,7 +184,7 @@ import { DatosAMDC } from '../../../core/interfaces/datos-amdc.interface';
                   <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
                     aria-hidden="true">
                     <path fill-rule="evenodd"
-                      d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                      d="M7.293 14.707a1 1 010-1.414L10.586 10 7.293 6.707a1 1 011.414-1.414l4 4a1 1 010 1.414l-4 4a1 1 01-1.414 0z"
                       clip-rule="evenodd" />
                   </svg>
                 </button>
@@ -218,8 +196,8 @@ import { DatosAMDC } from '../../../core/interfaces/datos-amdc.interface';
     </div>
   `
 })
-export class DatosAMDCListComponent implements OnInit {
-  datos: DatosAMDC[] = [];
+export class DatosAmdcListComponent implements OnInit {
+  datosAmdc: DatosAMDC[] = [];
   filterForm: FormGroup;
   currentPage = 1;
   pageSize = 10;
@@ -228,43 +206,35 @@ export class DatosAMDCListComponent implements OnInit {
   Math = Math; // Make Math available in template
 
   constructor(
-    private datosAMDCService: DatosAMDCService,
-    private authService: AuthService,
+    private datosAmdcService: DatosAMDCService,
     private fb: FormBuilder
   ) {
     this.filterForm = this.fb.group({
-      RTN: [''],
-      ICS: [''],
-      ANIO: [''],
-      NOMBRE: [''],
-      NOMBRE_COMERCIAL: [''],
-      ESTATUS: ['']
+      rtn: [''],
+      nombreComercial: [''],
+      nombre: ['']
     });
   }
 
-  get isAdmin(): boolean {
-    return this.authService.isAdmin;
-  }
-
   ngOnInit(): void {
-    this.loadDatos();
+    this.loadDatosAmdc();
   }
 
-  loadDatos(): void {
+  loadDatosAmdc(): void {
     const filters = {
       ...this.filterForm.value,
       page: this.currentPage,
       limit: this.pageSize
     };
 
-    this.datosAMDCService.getDatosAMDC(filters, this.currentPage, this.pageSize).subscribe({
-      next: (response) => {
-        this.datos = response.data;
+    this.datosAmdcService.getDatosAMDC(filters).subscribe({
+      next: (response: { data: DatosAMDC[], meta: { total: number, page: number, limit: number } }) => {
+        this.datosAmdc = response.data;
         this.totalItems = response.meta.total;
         this.hasNextPage = this.currentPage * this.pageSize < this.totalItems;
       },
-      error: (error) => {
-        console.error('Error loading datos:', error);
+      error: (error: any) => {
+        console.error('Error loading datos-amdc:', error);
         // Here you would typically show an error message
       }
     });
@@ -272,31 +242,31 @@ export class DatosAMDCListComponent implements OnInit {
 
   onFilter(): void {
     this.currentPage = 1;
-    this.loadDatos();
+    this.loadDatosAmdc();
   }
 
   previousPage(): void {
     if (this.currentPage > 1) {
       this.currentPage--;
-      this.loadDatos();
+      this.loadDatosAmdc();
     }
   }
 
   nextPage(): void {
     if (this.hasNextPage) {
       this.currentPage++;
-      this.loadDatos();
+      this.loadDatosAmdc();
     }
   }
 
-  deleteDato(id: string): void {
+  deleteDatoAmdc(id: string): void {
     if (confirm('¿Está seguro que desea eliminar este registro?')) {
-      this.datosAMDCService.deleteDatoAMDC(id).subscribe({
+      this.datosAmdcService.deleteDatoAMDC(id).subscribe({
         next: () => {
-          this.loadDatos();
+          this.loadDatosAmdc();
         },
-        error: (error) => {
-          console.error('Error deleting dato:', error);
+        error: (error: any) => {
+          console.error('Error deleting dato-amdc:', error);
           // Here you would typically show an error message
         }
       });

@@ -9,18 +9,18 @@ import { AuthService } from '../../../core/services/auth.service';
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
   template: `
-    <div class="min-h-screen bg-gray-100">
-      <header class="bg-white shadow">
-        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+    <div class="min-h-screen bg-gray-100 w-full">
+      <header class="bg-white shadow w-full">
+        <div class="w-full mx-auto py-6 px-4 sm:px-6 lg:px-8">
           <h2 class="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
             Registro de Actividades
           </h2>
         </div>
       </header>
 
-      <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+      <main class="w-full mx-auto py-6 sm:px-6 lg:px-8">
         <!-- Filters -->
-        <div class="bg-white px-4 py-5 border-b border-gray-200 sm:px-6">
+        <div class="bg-white px-4 py-5 border-b border-gray-200 sm:px-6 rounded-lg shadow-sm">
           <form [formGroup]="filterForm" (ngSubmit)="onFilter()">
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <div>
@@ -59,8 +59,8 @@ import { AuthService } from '../../../core/services/auth.service';
           </form>
         </div>
 
-        <!-- Logs Table -->
-        <div class="flex flex-col mt-6">
+        <!-- Desktop Logs Table - Visible only on medium screens and up -->
+        <div class="hidden md:flex flex-col mt-6">
           <div class="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
             <div class="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
               <div class="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
@@ -126,8 +126,48 @@ import { AuthService } from '../../../core/services/auth.service';
           </div>
         </div>
 
+        <!-- Mobile Card View - Visible only on small screens -->
+        <div class="md:hidden mt-6 space-y-4">
+          <div *ngFor="let log of logs" class="bg-white shadow rounded-lg overflow-hidden border border-gray-200">
+            <div class="px-4 py-5 sm:px-6 bg-gray-50 flex justify-between items-center">
+              <div>
+                <h3 class="text-base font-medium text-gray-900">{{ log.user.name }}</h3>
+                <p class="text-sm text-gray-500 mt-1">{{ log.createdAt | date:'short' }}</p>
+              </div>
+              <span
+                class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full"
+                [ngClass]="{
+                  'bg-green-100 text-green-800': log.action === 'LOGIN',
+                  'bg-red-100 text-red-800': log.action === 'LOGOUT',
+                  'bg-blue-100 text-blue-800': log.action === 'CREATE',
+                  'bg-yellow-100 text-yellow-800': log.action === 'UPDATE',
+                  'bg-purple-100 text-purple-800': log.action === 'READ',
+                  'bg-gray-100 text-gray-800': log.action === 'DELETE'
+                }">
+                {{ log.action }}
+              </span>
+            </div>
+            <div class="border-t border-gray-200 px-4 py-5 sm:p-0">
+              <dl class="sm:divide-y sm:divide-gray-200">
+                <div class="py-3 sm:py-4 px-4 sm:grid sm:grid-cols-3 sm:gap-4">
+                  <dt class="text-sm font-medium text-gray-500">Usuario</dt>
+                  <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{{ log.user.username }}</dd>
+                </div>
+                <div class="py-3 sm:py-4 px-4 sm:grid sm:grid-cols-3 sm:gap-4">
+                  <dt class="text-sm font-medium text-gray-500">Correo</dt>
+                  <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{{ log.user.email }}</dd>
+                </div>
+                <div class="py-3 sm:py-4 px-4 sm:grid sm:grid-cols-3 sm:gap-4">
+                  <dt class="text-sm font-medium text-gray-500">Detalles</dt>
+                  <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{{ log.details }}</dd>
+                </div>
+              </dl>
+            </div>
+          </div>
+        </div>
+
         <!-- Pagination -->
-        <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+        <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6 rounded-lg mt-6">
           <div class="flex-1 flex justify-between sm:hidden">
             <button (click)="previousPage()" [disabled]="currentPage === 1"
               class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">

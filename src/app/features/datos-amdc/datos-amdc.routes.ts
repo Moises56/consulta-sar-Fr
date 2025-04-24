@@ -4,7 +4,7 @@ import { authGuard } from '../../core/guards/auth.guard';
 export const DATOS_AMDC_ROUTES: Routes = [
   {
     path: '',
-    loadComponent: () => import('./datos-amdc-list/datos-amdc-list.component').then(m => m.DatosAMDCListComponent),
+    loadComponent: () => import('./datos-amdc-list/datos-amdc-list.component').then(m => m.DatosAmdcListComponent),
     canActivate: [authGuard]
   },
   {

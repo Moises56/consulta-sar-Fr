@@ -71,7 +71,7 @@ type CustomError = { status: number; message: string; isUserMessage: boolean };
                 <div class="relative mt-1 w-full">
                   <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                     <svg class="w-4 h-4 text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M20 4a2 2 0 0 0-2-2h-2V1a1 1 0 0 0-2 0v1h-3V1a1 1 0 0 0-2 0v1H6V1a1 1 0 0 0-2 0v1H2a2 2 0 0 0-2 2v2h20V4ZM0 18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8H0v10Zm5-8h10a1 1 0 0 1 0 2H5a1 1 0 0 1 0-2Z"/>
+                      <path d="M20 4a2 2 0 0 0-2-2h-2V1a1 1 0 0 0-2 0v1h-3V1a1 1 0 0 0-2 0v1H6V1a1 1 0 0 0-2 0v1H2a2 2 0 0 0-2 2v2h20V4ZM0 18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8H0v10Zm5-8h10a1 1 0 0 1 0 2H5a1 1 0 1 0 0-2Z"/>
                     </svg>
                   </div>
                   <input 
@@ -124,7 +124,7 @@ type CustomError = { status: number; message: string; isUserMessage: boolean };
                 <div class="relative mt-1 w-full">
                   <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                     <svg class="w-4 h-4 text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M20 4a2 2 0 0 0-2-2h-2V1a1 1 0 0 0-2 0v1h-3V1a1 1 0 0 0-2 0v1H6V1a1 1 0 0 0-2 0v1H2a2 2 0 0 0-2 2v2h20V4ZM0 18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8H0v10Zm5-8h10a1 1 0 0 1 0 2H5a1 1 0 0 1 0-2Z"/>
+                      <path d="M20 4a2 2 0 0 0-2-2h-2V1a1 1 0 0 0-2 0v1h-3V1a1 1 0 0 0-2 0v1H6V1a1 1 0 0 0-2 0v1H2a2 2 0 0 0-2 2v2h20V4ZM0 18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8H0v10Zm5-8h10a1 1 0 0 1 0 2H5a1 1 0 1 0 0-2Z"/>
                     </svg>
                   </div>
                   <input 
@@ -698,6 +698,23 @@ export class VentasBrutasComponent {
       };
 
       this.executeSearch(rtn, periodoDesdeFormatted, periodoHastaFormatted, anio);
+      
+      // Limpiar los campos del formulario después de realizar la búsqueda
+      this.searchForm.patchValue({
+        rtn: '',
+        periodoDesde: '',
+        periodoHasta: '',
+        periodoDesdeDisplay: '',
+        periodoHastaDisplay: ''
+      });
+      
+      // Asegurar que los validadores se reseteen correctamente
+      this.searchForm.markAsPristine();
+      this.searchForm.markAsUntouched();
+      
+      // Resetear las banderas del calendario
+      this.showCalendarDesde = false;
+      this.showCalendarHasta = false;
     }
   }
 
@@ -801,175 +818,201 @@ export class VentasBrutasComponent {
     });
   }
 
-  // Método para exportar el historial de consultas a PDF
-  exportToPDF(): void {
-    if (this.consultasRealizadas.length === 0) {
-      this.toastr.warning('No hay consultas para exportar');
-      return;
-    }
+// Método para exportar el historial de consultas a PDF
+exportToPDF(): void {
+  if (this.consultasRealizadas.length === 0) {
+    this.toastr.warning('No hay consultas para exportar');
+    return;
+  }
 
-    try {
-      // Rutas correctas de los logos
-      const logoPath = 'logos/logo.png';
-      const logoBuenCorazonPath = 'logos/logoBuenCorazon.png';
-      
-      // Cargar las imágenes primero
-      this.loadImageAsBase64(logoPath).then(logoData => {
-        this.loadImageAsBase64(logoBuenCorazonPath).then(logoBuenCorazonData => {
-          
-          // Crear el documento con los estilos
-          const docDefinition: any = {
-            pageSize: 'LETTER',
-            pageMargins: [40, 100, 40, 60], // Aumentamos el margen superior para dar espacio a los logos
-            header: {
+  try {
+    // Rutas correctas de los logos
+    const logoPath = 'logos/logo.png';
+    const logoBuenCorazonPath = 'logos/logoBuenCorazon.png';
+    
+    // Cargar las imágenes primero
+    this.loadImageAsBase64(logoPath).then(logoData => {
+      this.loadImageAsBase64(logoBuenCorazonPath).then(logoBuenCorazonData => {
+        
+        // Crear el documento con los estilos
+        const docDefinition: any = {
+          pageSize: 'LETTER',
+          pageMargins: [40, 80, 40, 40], // Reducir margen superior e inferior
+          header: {
+            columns: [
+              {
+                image: logoData,
+                width: 80,
+                alignment: 'left',
+                margin: [30, 20, 0, 0],
+              },
+              {
+                text: 'Reporte Ventas Brutas',
+                alignment: 'center',
+                fontSize: 16,
+                bold: true,
+                margin: [0, 40, 0, 0],
+                color: '#5ccedf',
+              },
+              {
+                image: logoBuenCorazonData,
+                width: 80,
+                alignment: 'right',
+                margin: [0, 20, 30, 0],
+              },
+            ],
+          },
+          footer: (currentPage: number, pageCount: number) => {
+            return {
               columns: [
                 {
-                  image: logoData,
-                  width: 80,
+                  text: '© 2025 Alcaldía Municipal del Distrito Central',
                   alignment: 'left',
-                  margin: [30, 20, 0, 0]
+                  fontSize: 8,
+                  margin: [40, 5, 0, 0], // Reducir margen superior
+                  color: '#5ccedf',
                 },
                 {
-                  text: 'Reporte Ventas Brutas',
-                  alignment: 'center',
-                  fontSize: 16,
-                  bold: true,
-                  margin: [0, 40, 0, 0]
-                },
-                {
-                  image: logoBuenCorazonData,
-                  width: 80,
+                  text: `Página ${currentPage} de ${pageCount}`,
                   alignment: 'right',
-                  margin: [0, 20, 30, 0]
-                }
-              ]
+                  fontSize: 8,
+                  margin: [0, 5, 40, 0], // Reducir margen superior
+                  color: '#5ccedf',
+                },
+              ],
+            };
+          },
+          content: [],
+          styles: {
+            header: {
+              fontSize: 14,
+              bold: true,
+              margin: [0, 10, 0, 5],
+              color: 'black',
             },
-            footer: (currentPage: number, pageCount: number) => {
-              return {
-                text: `Página ${currentPage} de ${pageCount}`,
-                alignment: 'center',
-                fontSize: 8,
-                margin: [0, 10, 0, 0]
-              };
+            subheader: {
+              fontSize: 12,
+              bold: true,
+              margin: [0, 10, 0, 5],
+              color: 'black',
             },
-            content: [],
-            styles: {
-              header: {
-                fontSize: 14,
-                bold: true,
-                margin: [0, 10, 0, 5]
-              },
-              subheader: {
-                fontSize: 12,
-                bold: true,
-                margin: [0, 10, 0, 5]
-              },
-              tableHeader: {
-                bold: true,
-                fontSize: 10,
-                color: 'black',
-                fillColor: '#f3f4f6',
-              },
-              tableCell: {
-                fontSize: 9
-              },
-              vigente: {
-                fontSize: 9,
-                color: '#059669'
-              },
-              rectificado: {
-                fontSize: 9,
-                color: '#DC2626'
-              },
-              diferenciaPositiva: {
-                fontSize: 9,
-                color: '#DC2626'
-              },
-              diferenciaNegativa: {
-                fontSize: 9,
-                color: '#059669'
-              },
-              diferenciaCero: {
-                fontSize: 9,
-                color: '#4B5563'
-              }
-            }
-          };
+            tableHeader: {
+              bold: true,
+              fontSize: 10,
+              color: 'white',
+              fillColor: '#5ccedf',
+            },
+            tableCell: {
+              fontSize: 9,
+              color: 'black',
+            },
+            vigente: {
+              fontSize: 9,
+              color: '#059669',
+            },
+            rectificado: {
+              fontSize: 9,
+              color: '#DC2626',
+            },
+            diferenciaPositiva: {
+              fontSize: 9,
+              color: '#DC2626',
+            },
+            diferenciaNegativa: {
+              fontSize: 9,
+              color: '#059669',
+            },
+            diferenciaCero: {
+              fontSize: 9,
+              color: '#4B5563',
+            },
+          },
+        };
 
-          // Fecha y hora actual y usuario que generó
-          const now = new Date();
-          const currentUser = this.authService.currentUser;
-          
-          // Sección de información de generación
-          docDefinition.content.push({
+        // Fecha y hora actual y usuario que generó
+        const now = new Date();
+        const currentUser = this.authService.currentUser;
+        
+        // Crear un stack inicial que combine metadatos y consultas
+        const mainContentStack: any[] = [
+          {
             columns: [
               {
                 stack: [
                   {
                     text: `Generado: ${now.toLocaleDateString()} ${now.toLocaleTimeString()}`,
-                    fontSize: 8
+                    fontSize: 8,
+                    color: 'black'
                   },
                   {
                     text: `Generado por: ${currentUser ? currentUser.name : 'Usuario del sistema'}`,
                     fontSize: 8,
-                    margin: [0, 2, 0, 0]
+                    margin: [0, 2, 0, 0],
+                    color: 'black'
                   }
                 ],
                 alignment: 'right'
               }
             ],
-            margin: [0, 0, 0, 20]
-          });
+            margin: [0, 0, 0, 5] // Reducir margen inferior
+          }
+        ];
 
-          // Iterar sobre todas las consultas e ir agregando secciones al PDF
-          this.consultasRealizadas.forEach((consulta, index) => {
+        // Organizar consultas para mostrar 2 por página
+        const consultas = [...this.consultasRealizadas];
+        const consultasPorPagina = 2;
+
+        for (let i = 0; i < consultas.length; i += consultasPorPagina) {
+          const currentConsultas = consultas.slice(i, i + consultasPorPagina);
+          const consultaContent: any[] = [];
+
+          // Generar contenido para cada consulta
+          for (let j = 0; j < currentConsultas.length; j++) {
+            const consulta = currentConsultas[j];
+            const consultaIndex = this.consultasRealizadas.indexOf(consulta);
+            
             // Datos generales de la empresa
-            if (consulta.amdc.length > 0) {
-              docDefinition.content.push({
-                text: `#Consulta ${index + 1} - ${consulta.amdc[0].NOMBRE_COMERCIAL}`,
-                style: 'header',
-                margin: [0, 10, 0, 0]
-              });
-
-              docDefinition.content.push({
-                text: `RTN: ${consulta.amdc[0].RTN} - Año: ${consulta.sar.anio}`,
-                style: 'subheader'
-              });
-            } else {
-              docDefinition.content.push({
-                text: `#Consulta ${index + 1}`,
-                style: 'header',
-                margin: [0, 10, 0, 0]
-              });
-            }
-
-            // Tabla con datos de SAR
-            docDefinition.content.push({
-              text: 'Información SAR',
-              style: 'subheader',
-              margin: [0, 10, 0, 5]
+            const nombreComercial = consulta.amdc.length > 0 ? consulta.amdc[0].NOMBRE_COMERCIAL : 'N/A';
+            const rtnEmpresa = consulta.amdc.length > 0 ? consulta.amdc[0].RTN : 'N/A';
+            
+            consultaContent.push({
+              stack: [
+                {
+                  text: `#Consulta ${consultaIndex + 1} - ${nombreComercial}`,
+                  style: 'header',
+                  margin: [0, j > 0 ? 20 : 10, 0, 0] // Ajustar margen superior
+                },
+                {
+                  text: `RTN: ${rtnEmpresa} - Año: ${consulta.sar.anio}`,
+                  style: 'subheader'
+                },
+                // Tabla con datos de SAR
+                {
+                  text: 'Información SAR',
+                  style: 'subheader',
+                  margin: [0, 5, 0, 5]
+                },
+                {
+                  table: {
+                    headerRows: 1,
+                    widths: ['*', '*'],
+                    body: [
+                      [{ text: 'Concepto', style: 'tableHeader' }, { text: 'Valor', style: 'tableHeader' }],
+                      [{ text: 'Año', style: 'tableCell' }, { text: consulta.sar.anio, style: 'tableCell' }],
+                      [{ text: 'Total Ventas SAR', style: 'tableCell' }, { text: `L. ${consulta.sar.importeTotalVentas.toFixed(2)}`, style: 'tableCell' }]
+                    ]
+                  },
+                  margin: [0, 5, 0, 10]
+                },
+                // Tabla con datos de AMDC
+                {
+                  text: 'Información AMDC',
+                  style: 'subheader',
+                  margin: [0, 5, 0, 5]
+                }
+              ]
             });
-
-            docDefinition.content.push({
-              table: {
-                headerRows: 1,
-                widths: ['*', '*'],
-                body: [
-                  [{ text: 'Concepto', style: 'tableHeader' }, { text: 'Valor', style: 'tableHeader' }],
-                  [{ text: 'Año', style: 'tableCell' }, { text: consulta.sar.anio, style: 'tableCell' }],
-                  [{ text: 'Total Ventas SAR', style: 'tableCell' }, { text: `L. ${consulta.sar.importeTotalVentas.toFixed(2)}`, style: 'tableCell' }]
-                ]
-              },
-              margin: [0, 5, 0, 15]
-            });
-
-            // Tabla con datos de AMDC
-            docDefinition.content.push({
-              text: 'Información AMDC',
-              style: 'subheader',
-              margin: [0, 10, 0, 5]
-            });
-
+            
             const amdcRows = [
               [
                 { text: 'Cantidad Declarada', style: 'tableHeader' }, 
@@ -991,16 +1034,16 @@ export class VentasBrutasComponent {
                 }
               ]);
             });
-
-            docDefinition.content.push({
+            
+            consultaContent.push({
               table: {
                 headerRows: 1,
                 widths: ['*', '*', '*'],
                 body: amdcRows
               },
-              margin: [0, 5, 0, 15]
+              margin: [0, 5, 0, 10]
             });
-
+            
             // Sección de diferencia
             const totalDeclarado = consulta.amdc
               .filter(dato => dato.ESTATUS === 1)
@@ -1020,53 +1063,71 @@ export class VentasBrutasComponent {
               textoComparacion = 'Valores iguales (declaración correcta)';
               estiloDiferencia = 'diferenciaCero';
             }
-
-            docDefinition.content.push({
-              text: 'Análisis Comparativo',
-              style: 'subheader',
-              margin: [0, 10, 0, 5]
+            
+            consultaContent.push({
+              stack: [
+                {
+                  text: 'Análisis Comparativo',
+                  style: 'subheader',
+                  margin: [0, 5, 0, 5]
+                },
+                {
+                  table: {
+                    headerRows: 1,
+                    widths: ['*', '*'],
+                    body: [
+                      [{ text: 'Diferencia', style: 'tableHeader' }, { text: 'Análisis', style: 'tableHeader' }],
+                      [
+                        { text: `L. ${Math.abs(diferencia).toFixed(2)}`, style: estiloDiferencia },
+                        { text: textoComparacion, style: estiloDiferencia }
+                      ]
+                    ]
+                  },
+                  margin: [0, 5, 0, 10]
+                }
+              ]
             });
-
-            docDefinition.content.push({
-              table: {
-                headerRows: 1,
-                widths: ['*', '*'],
-                body: [
-                  [{ text: 'Diferencia', style: 'tableHeader' }, { text: 'Análisis', style: 'tableHeader' }],
-                  [
-                    { text: `L. ${Math.abs(diferencia).toFixed(2)}`, style: estiloDiferencia },
-                    { text: textoComparacion, style: estiloDiferencia }
-                  ]
-                ]
-              },
-              margin: [0, 5, 0, 15]
-            });
-
-            // Separador entre consultas excepto la última
-            if (index < this.consultasRealizadas.length - 1) {
-              docDefinition.content.push({
-                canvas: [{ type: 'line', x1: 0, y1: 5, x2: 515, y2: 5, lineWidth: 1, lineColor: '#e5e7eb' }],
-                margin: [0, 10, 0, 10]
+            
+            // Si no es la última consulta de la página actual, añadir un separador
+            if (j < currentConsultas.length - 1) {
+              consultaContent.push({
+                canvas: [{ type: 'line', x1: 0, y1: 5, x2: 515, y2: 5, lineWidth: 1, lineColor: '#5ccedf' }],
+                margin: [0, 5, 0, 5]
               });
             }
+          }
+          
+          // Agregar el contenido de las consultas al stack principal
+          mainContentStack.push({
+            stack: consultaContent,
+            unbreakable: true // Evita que una consulta se divida entre páginas
           });
+        }
 
-          // Generar el PDF
-          pdfMake.createPdf(docDefinition).download('reporte-ventas-brutas.pdf');
-          this.toastr.success('PDF generado con éxito');
-        }).catch(error => {
-          console.error('Error al cargar logoBuenCorazon:', error);
-          this.toastr.error('Error al generar el PDF: No se pudo cargar una de las imágenes');
+        // Agregar el stack principal al contenido del documento
+        docDefinition.content.push({
+          stack: mainContentStack
         });
+
+        // Depuración: Inspeccionar el contenido final
+        console.log('Contenido final de docDefinition.content:', JSON.stringify(docDefinition.content, null, 2));
+        
+        // Generar el PDF con el formato mejorado
+        pdfMake.createPdf(docDefinition).download('reporte-ventas-brutas.pdf');
+        this.toastr.success('PDF generado con éxito');
       }).catch(error => {
-        console.error('Error al cargar logo:', error);
+        console.error('Error al cargar logoBuenCorazon:', error);
         this.toastr.error('Error al generar el PDF: No se pudo cargar una de las imágenes');
       });
-    } catch (error) {
-      console.error('Error al generar PDF:', error);
-      this.toastr.error('Error al generar el PDF');
-    }
+    }).catch(error => {
+      console.error('Error al cargar logo:', error);
+      this.toastr.error('Error al generar el PDF: No se pudo cargar una de las imágenes');
+    });
+  } catch (error) {
+    console.error('Error al generar PDF:', error);
+    this.toastr.error('Error al generar el PDF');
   }
+}
 
   // Método auxiliar para cargar imágenes como base64
   loadImageAsBase64(url: string): Promise<string> {

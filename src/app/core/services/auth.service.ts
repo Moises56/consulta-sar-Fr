@@ -15,7 +15,14 @@ export class AuthService {
   constructor(
     private http: HttpClient,
     private toastr: ToastrService
-  ) {}
+  ) {
+    // Al iniciar el servicio, verificamos el estado de autenticación
+    this.checkAuthStatus().subscribe({
+      error: () => {
+        console.log('No hay sesión activa');
+      }
+    });
+  }
 
   login(credentials: LoginRequest): Observable<LoginResponse> {
     return this.http.post<LoginResponse>(`${environment.apiUrl}/auth/login`, credentials, {
@@ -46,19 +53,14 @@ export class AuthService {
       withCredentials: true
     }).pipe(
       tap(() => {
-        // Limpiar completamente el estado de usuario
+        // Limpiar el estado de usuario
         this.currentUserSubject.next(null);
-        // Eliminar cualquier posible dato de sesión almacenado en localStorage si existe
-        localStorage.removeItem('user_session');
-        sessionStorage.removeItem('user_session');
         this.toastr.info('Sesión cerrada');
       }),
       catchError((error: HttpErrorResponse) => {
         console.error('Logout failed:', error);
         // Incluso en caso de error, limpiamos el estado local
         this.currentUserSubject.next(null);
-        localStorage.removeItem('user_session');
-        sessionStorage.removeItem('user_session');
         
         if (error.error?.message) {
           this.toastr.error(error.error.message);

@@ -784,6 +784,42 @@ export class VentasBrutasComponent {
               amdc: results.amdc.data
             });
 
+            // Calcular la diferencia entre ventas brutas y declarado AMDC
+            const diferencia = this.totalVentas - this.datosAmdc
+              .filter(dato => dato.ESTATUS === 1)
+              .reduce((total, dato) => total + parseFloat(dato.CANTIDAD_DECLARADA), 0);
+            
+            // Determinar el análisis basado en la diferencia
+            let analisis = '';
+            if (diferencia > 0) {
+              analisis = 'En contra de la AMDC (valor no declarado)';
+            } else if (diferencia < 0) {
+              analisis = 'A favor de la AMDC (valor sobredeclarado)';
+            } else {
+              analisis = 'Valores iguales (declaración correcta)';
+            }
+
+            // Preparar las declaraciones de AMDC con el formato requerido
+            const declaracionesAmdc = this.datosAmdc.map(dato => {
+              return {
+                cantidadDeclarada: dato.CANTIDAD_DECLARADA,
+                estatus: dato.ESTATUS === 1 ? 'Vigente' : 'Rectificado',
+                fecha: new Date(dato.FECHA).toLocaleDateString('es-ES')
+              };
+            });
+            
+            // Mostrar en consola los datos de la consulta con el nuevo formato
+            console.log('DATOS DE CONSULTA REALIZADA:', {
+              rtn: rtn,
+              nombreComercial: this.datosAmdc.length > 0 ? this.datosAmdc[0].NOMBRE_COMERCIAL : 'N/A',
+              anio: this.ventasBrutas.anio,
+              importeTotalVentas: this.ventasBrutas.importeTotalVentas,
+              declaracionesAmdc: declaracionesAmdc,
+              diferencia: Math.abs(diferencia),
+              analisis: analisis,
+              fechaConsulta: new Date().toISOString()
+            });
+
             this.toastr.success('Consulta realizada con éxito');
             this.canRetryManually = false;
           } else {
@@ -1285,26 +1321,6 @@ exportToPDF(): void {
       
       // Mostrar notificación
       this.toastr.info('Consulta eliminada del historial');
-      
-      // Mostrar en consola el historial actualizado después de eliminar la consulta
-      console.log('Historial de consultas actualizado:', this.consultasRealizadas.map((consulta, idx) => ({
-        indice: idx,
-        rtn: consulta.amdc.length > 0 ? consulta.amdc[0].RTN : 'N/A',
-        nombreComercial: consulta.amdc.length > 0 ? consulta.amdc[0].NOMBRE_COMERCIAL : 'N/A',
-        anio: consulta.sar.anio,
-        importeTotalVentas: consulta.sar.importeTotalVentas,
-        declaracionesAmdc: consulta.amdc.map(dato => ({
-          cantidadDeclarada: dato.CANTIDAD_DECLARADA,
-          estatus: dato.ESTATUS === 1 ? 'Vigente' : 'Rectificado',
-          fecha: new Date(dato.FECHA).toLocaleDateString()
-        })),
-        diferencia: this.calcularDiferencia(consulta),
-        analisis: this.calcularDiferencia(consulta) > 0 
-          ? 'En contra de la AMDC (valor no declarado)' 
-          : this.calcularDiferencia(consulta) < 0 
-            ? 'A favor de la AMDC (valor sobredeclarado)' 
-            : 'Valores iguales (declaración correcta)'
-      })));
     }
   }
 }

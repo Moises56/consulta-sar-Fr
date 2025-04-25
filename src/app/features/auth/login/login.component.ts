@@ -1,7 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
@@ -47,13 +47,15 @@ import { AuthService } from '../../../core/services/auth.service';
     </div>
   `
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
   loginForm: FormGroup;
+  returnUrl: string = '/dashboard';
 
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private route: ActivatedRoute
   ) {
     this.loginForm = this.fb.group({
       login: ['', [Validators.required]],
@@ -61,11 +63,23 @@ export class LoginComponent {
     });
   }
 
+  ngOnInit(): void {
+    // Obtener el returnUrl de los parámetros de consulta si existe
+    this.route.queryParams.subscribe(params => {
+      if (params['returnUrl']) {
+        this.returnUrl = params['returnUrl'];
+        console.log('Return URL found:', this.returnUrl);
+      }
+    });
+  }
+
   onSubmit() {
     if (this.loginForm.valid) {
       this.authService.login(this.loginForm.value).subscribe({
         next: () => {
-          this.router.navigate(['/dashboard']);
+          // Redirigir a la URL de retorno o al dashboard por defecto
+          console.log('Login successful, redirecting to:', this.returnUrl);
+          this.router.navigateByUrl(this.returnUrl);
         },
         error: (error) => {
           console.error('Login error:', error);

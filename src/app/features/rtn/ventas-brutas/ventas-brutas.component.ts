@@ -883,8 +883,8 @@ exportToPDF(): void {
         const docDefinition: any = {
           pageSize: 'LETTER',
           // Reducir márgenes
-          pageMargins: [40, 80, 40, 40], 
-          
+          pageMargins: [40, 80, 40, 40],
+
           // Encabezado del documento
           header: {
             margin: [40, 20, 40, 20],
@@ -893,25 +893,38 @@ exportToPDF(): void {
                 image: logoData,
                 width: 80,
                 alignment: 'left',
-                margin: [0, 0, 0, 0]
+                margin: [0, 0, 0, 0],
               },
               {
-                text: 'Reporte de Volumen de Ventas Brutas',
+                stack: [
+                  {
+                    text: 'Unidad Municipal de Inteligencia Fiscal',
+                    alignment: 'center',
+                    fontSize: 16,
+                    bold: true,
+                    margin: [0, 10, 0, 5],
+                    color: 'black',
+                  },
+                  {
+                    text: 'Reporte de Volumen de Ventas Brutas',
+                    alignment: 'center',
+                    fontSize: 12,
+                    bold: true,
+                    margin: [0, 0, 0, 0],
+                    color: '#5ccedf',
+                  },
+                ],
                 alignment: 'center',
-                fontSize: 16,
-                bold: true,
-                margin: [0, 20, 0, 0],
-                color: '#5ccedf'
               },
               {
                 image: logoBuenCorazonData,
                 width: 80,
                 alignment: 'right',
-                margin: [0, 0, 0, 0]
-              }
-            ]
+                margin: [0, 0, 0, 0],
+              },
+            ],
           },
-          
+
           // Pie de página
           footer: (currentPage: number, pageCount: number) => {
             return {
@@ -921,19 +934,19 @@ exportToPDF(): void {
                   alignment: 'left',
                   fontSize: 8,
                   margin: [40, 5, 0, 0],
-                  color: '#000'
+                  color: '#000',
                 },
                 {
                   text: `Página ${currentPage} de ${pageCount}`,
                   alignment: 'right',
                   fontSize: 8,
                   margin: [0, 5, 40, 0],
-                  color: '#000'
-                }
-              ]
+                  color: '#000',
+                },
+              ],
             };
           },
-          
+
           // Contenido del documento
           content: [
             // Metadata como fecha y usuario
@@ -946,66 +959,68 @@ exportToPDF(): void {
                     {
                       text: `Generado: ${now.toLocaleDateString()} ${now.toLocaleTimeString()}`,
                       fontSize: 8,
-                      color: 'black'
+                      color: 'black',
                     },
                     {
-                      text: `Generado por: ${currentUser ? currentUser.name : 'Usuario del sistema'}`,
+                      text: `Generado por: ${
+                        currentUser ? currentUser.name : 'Usuario del sistema'
+                      }`,
                       fontSize: 8,
-                      color: 'black'
-                    }
+                      color: 'black',
+                    },
                   ],
-                  alignment: 'right'
-                }
+                  alignment: 'right',
+                },
               ],
-              margin: [0, 0, 0, 10]
-            }
+              margin: [0, 0, 0, 10],
+            },
           ],
-          
+
           // Estilos para el documento
           styles: {
             header: {
               fontSize: 14,
               bold: true,
               margin: [0, 10, 0, 5],
-              color: 'black'
+              color: 'black',
             },
             subheader: {
               fontSize: 12,
               bold: true,
               margin: [0, 10, 0, 5],
-              color: 'black'
+              color: 'black',
             },
             tableHeader: {
               bold: true,
               fontSize: 10,
               color: 'white',
-              fillColor: '#5ccedf'
+              fillColor: '#5ccedf',
             },
             tableCell: {
               fontSize: 9,
-              color: 'black'
+              color: 'black',
             },
             vigente: {
               fontSize: 9,
-              color: '#059669'
+              color: '#059669',
             },
             rectificado: {
               fontSize: 9,
-              color: '#DC2626'
+              color: '#DC2626',
             },
             diferenciaPositiva: {
               fontSize: 9,
-              color: '#DC2626'
+              color: '#DC2626',
             },
             diferenciaNegativa: {
               fontSize: 9,
-              color: '#059669'
+              color: '#059669',
             },
             diferenciaCero: {
               fontSize: 9,
-              color: '#4B5563'
-            }
-          }
+              color: '#4B5563',
+            },
+          },
         };
 
         // Generar el contenido para cada consulta

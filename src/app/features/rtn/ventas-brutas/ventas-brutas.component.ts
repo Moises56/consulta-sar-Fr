@@ -346,13 +346,13 @@ type CustomError = { status: number; message: string; isUserMessage: boolean };
           <!-- Historical Results -->
           <div *ngIf="consultasRealizadas.length > 0" class="bg-white shadow overflow-hidden rounded-lg w-full">
             <div class="px-4 py-5 sm:px-6">
-              <div class="flex justify-between items-center">
+              <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center">
                 <h3 class="text-lg font-medium text-gray-900">Historial de consultas</h3>
-                <div class="flex space-x-2">
+                <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3 mt-3 sm:mt-0">
                   <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
                     {{consultasRealizadas.length}} {{consultasRealizadas.length === 1 ? 'consulta' : 'consultas'}}
                   </span>
-                  <div class="flex items-center space-x-2">
+                  <div class="flex items-center gap-2">
                     <button (click)="exportToPDF()" class="inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
                       <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
@@ -371,15 +371,20 @@ type CustomError = { status: number; message: string; isUserMessage: boolean };
             </div>
             
             <div class="border-t border-gray-200 divide-y divide-gray-200">
-              <div *ngFor="let consulta of consultasRealizadas" class="px-4 py-5 sm:p-6 w-full">
+              <div *ngFor="let consulta of consultasRealizadas; let i = index" class="px-4 py-5 sm:p-6 w-full">
                 <div class="border-b border-gray-200 pb-4 mb-4" *ngIf="consulta.amdc.length > 0">
                   <div class="flex flex-col md:flex-row md:justify-between md:items-center">
                     <div class="w-full">
                       <h4 class="text-lg font-bold text-gray-900 line-clamp-2">{{consulta.amdc[0].NOMBRE_COMERCIAL}}</h4>
                       <p class="mt-1 text-sm text-gray-500">RTN: <span class="font-semibold">{{consulta.amdc[0].RTN}}</span></p>
                     </div>
-                    <div class="mt-2 md:mt-0">
+                    <div class="flex items-center mt-2 md:mt-0 gap-2">
                       <span class="text-sm text-gray-500">Año: {{consulta.sar.anio}}</span>
+                      <button (click)="eliminarConsulta(i)" class="text-gray-400 hover:text-red-600 focus:outline-none" title="Eliminar consulta">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -870,14 +875,14 @@ exportToPDF(): void {
                   alignment: 'left',
                   fontSize: 8,
                   margin: [40, 5, 0, 0], // Reducir margen superior
-                  color: '#5ccedf',
+                  color: '#000',
                 },
                 {
                   text: `Página ${currentPage} de ${pageCount}`,
                   alignment: 'right',
                   fontSize: 8,
                   margin: [0, 5, 40, 0], // Reducir margen superior
-                  color: '#5ccedf',
+                  color: '#000',
                 },
               ],
             };
@@ -980,7 +985,7 @@ exportToPDF(): void {
                 {
                   text: `#Consulta ${consultaIndex + 1} - ${nombreComercial}`,
                   style: 'header',
-                  margin: [0, j > 0 ? 20 : 10, 0, 0] // Ajustar margen superior
+                  margin: [0, j > 0 ? 20 : 10] // Ajustar margen superior
                 },
                 {
                   text: `RTN: ${rtnEmpresa} - Año: ${consulta.sar.anio}`,
@@ -1269,6 +1274,37 @@ exportToPDF(): void {
     } catch (error) {
       console.error('Error al generar Excel:', error);
       this.toastr.error('Error al generar el Excel');
+    }
+  }
+
+  // Método para eliminar una consulta del historial
+  eliminarConsulta(index: number): void {
+    if (index >= 0 && index < this.consultasRealizadas.length) {
+      // Eliminar la consulta del arreglo
+      this.consultasRealizadas.splice(index, 1);
+      
+      // Mostrar notificación
+      this.toastr.info('Consulta eliminada del historial');
+      
+      // Mostrar en consola el historial actualizado después de eliminar la consulta
+      console.log('Historial de consultas actualizado:', this.consultasRealizadas.map((consulta, idx) => ({
+        indice: idx,
+        rtn: consulta.amdc.length > 0 ? consulta.amdc[0].RTN : 'N/A',
+        nombreComercial: consulta.amdc.length > 0 ? consulta.amdc[0].NOMBRE_COMERCIAL : 'N/A',
+        anio: consulta.sar.anio,
+        importeTotalVentas: consulta.sar.importeTotalVentas,
+        declaracionesAmdc: consulta.amdc.map(dato => ({
+          cantidadDeclarada: dato.CANTIDAD_DECLARADA,
+          estatus: dato.ESTATUS === 1 ? 'Vigente' : 'Rectificado',
+          fecha: new Date(dato.FECHA).toLocaleDateString()
+        })),
+        diferencia: this.calcularDiferencia(consulta),
+        analisis: this.calcularDiferencia(consulta) > 0 
+          ? 'En contra de la AMDC (valor no declarado)' 
+          : this.calcularDiferencia(consulta) < 0 
+            ? 'A favor de la AMDC (valor sobredeclarado)' 
+            : 'Valores iguales (declaración correcta)'
+      })));
     }
   }
 }

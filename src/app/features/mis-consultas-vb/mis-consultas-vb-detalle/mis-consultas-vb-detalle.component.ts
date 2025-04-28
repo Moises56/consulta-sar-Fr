@@ -378,7 +378,7 @@ export class MisConsultasVbDetalleComponent implements OnInit {
           fila['ImptoBruto'] = this.consulta.importeTotalVentas * 0.015;
           
           // La tasa siempre es 1.5%
-          fila['Tasa'] = '1.5%';
+          // fila['Tasa'] = '1.5%';
           
           // Usuario que realizó la consulta
           const currentUser = this.authService.currentUser;
@@ -390,7 +390,7 @@ export class MisConsultasVbDetalleComponent implements OnInit {
           fila['Diferencia'] = '';
           fila['Análisis'] = '';
           fila['ImptoBruto'] = '';
-          fila['Tasa'] = '';
+          // fila['Tasa'] = '';
           fila['Usuario'] = '';
           fila['Fecha Consulta'] = '';
         }
@@ -416,7 +416,7 @@ export class MisConsultasVbDetalleComponent implements OnInit {
         { wch: 15 }, // Diferencia
         { wch: 30 }, // Análisis
         { wch: 15 }, // ImptoBruto
-        { wch: 10 }, // Tasa
+        // { wch: 10 }, // Tasa
         { wch: 25 }, // Usuario
         { wch: 15 }  // Fecha Consulta
       ];

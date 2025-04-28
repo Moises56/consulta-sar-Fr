@@ -499,7 +499,7 @@ export class VentasBrutasComponent implements OnInit {
 
   // Método mejorado para formatear números mostrando unidades (mil, millones, etc.)
   formatNumberWithUnits(value: number): string {
-    if (!value && value !== 0) return '';
+    if (value == null || isNaN(value)) return '';
     
     // Formatear con separador de miles y dos decimales
     const formatter = new Intl.NumberFormat('es-HN', {
@@ -507,35 +507,45 @@ export class VentasBrutasComponent implements OnInit {
       maximumFractionDigits: 2
     });
     
-    const formattedNumber = formatter.format(value);
-    
     // Para valores menores a mil, solo mostrar el número formateado
-    if (value < 1000) {
-      return formattedNumber;
+    if (Math.abs(value) < 1000) {
+      return formatter.format(value);
     }
     
     // Para valores mayores, aplicar unidades más profesionales
-    const magnitud = Math.floor(Math.log10(value) / 3);
+    const absValue = Math.abs(value);
+    const magnitud = Math.floor(Math.log10(absValue) / 3);
     const unidades = ['', 'mil', 'millones', 'mil millones', 'billones'];
     
     // Si es mil exacto, mostrar solo "mil"
-    if (value === 1000) {
-      return 'mil';
+    if (absValue === 1000) {
+      return value < 0 ? '-mil' : 'mil';
     }
     
     if (magnitud >= 1 && magnitud < unidades.length) {
       // Calcular el valor dividido por la magnitud
-      const valorBase = value / Math.pow(1000, magnitud);
-      // Formatear con 2 decimales si no es un número entero
-      const valorFormateado = Number.isInteger(valorBase) 
-        ? Math.floor(valorBase).toString()
-        : formatter.format(valorBase);
+      const valorBase = absValue / Math.pow(1000, magnitud);
       
-      return `${valorFormateado} ${unidades[magnitud]}`;
+      // Formatear con 2 decimales si no es un número entero
+      let valorFormateado = '';
+      if (Number.isInteger(valorBase)) {
+        valorFormateado = Math.floor(valorBase).toString();
+      } else {
+        // Si es cercano a un entero (diferencia menor a 0.01), redondear
+        if (Math.abs(Math.round(valorBase) - valorBase) < 0.01) {
+          valorFormateado = Math.round(valorBase).toString();
+        } else {
+          valorFormateado = formatter.format(valorBase);
+        }
+      }
+      
+      // Aplicar signo si es negativo
+      const signo = value < 0 ? '-' : '';
+      return `${signo}${valorFormateado} ${unidades[magnitud]}`;
     }
     
     // Si no se puede aplicar una unidad, devolver el formato con separadores
-    return formattedNumber;
+    return formatter.format(value);
   }
 
   constructor(
@@ -962,7 +972,7 @@ exportToPDF(): void {
 
   try {
     // Rutas correctas de los logos
-    const logoPath = 'logos/logo.png';
+    const logoPath = 'logos/logo4.png';
     const logoBuenCorazonPath = 'logos/logoBuenCorazon.png';
     
     // Cargar las imágenes primero
@@ -1149,6 +1159,9 @@ exportToPDF(): void {
             margin: [0, 5, 0, 5]
           });
           
+          // Formatear el monto con la función mejorada
+          const ventasSARFormateadas = this.formatNumberWithUnits(consulta.sar.importeTotalVentas);
+          
           docDefinition.content.push({
             table: {
               headerRows: 1,
@@ -1156,7 +1169,16 @@ exportToPDF(): void {
               body: [
                 [{ text: 'Concepto', style: 'tableHeader' }, { text: 'Valor', style: 'tableHeader' }],
                 [{ text: 'Año', style: 'tableCell' }, { text: consulta.sar.anio, style: 'tableCell' }],
-                [{ text: 'Total Ventas SAR', style: 'tableCell' }, { text: `L. ${consulta.sar.importeTotalVentas.toFixed(2)}`, style: 'tableCell' }]
+                [
+                  { text: 'Total Ventas SAR', style: 'tableCell' }, 
+                  { 
+                    text: `L. ${consulta.sar.importeTotalVentas.toLocaleString('es-HN', {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2
+                    })} (${ventasSARFormateadas})`, 
+                    style: 'tableCell' 
+                  }
+                ]
               ]
             },
             margin: [0, 5, 0, 10]
@@ -1178,8 +1200,17 @@ exportToPDF(): void {
           ];
 
           consulta.amdc.forEach(dato => {
+            const cantidadDeclarada = parseFloat(dato.CANTIDAD_DECLARADA);
+            const cantidadFormateada = this.formatNumberWithUnits(cantidadDeclarada);
+            
             amdcRows.push([
-              { text: `L. ${parseFloat(dato.CANTIDAD_DECLARADA).toFixed(2)}`, style: 'tableCell' },
+              { 
+                text: `L. ${cantidadDeclarada.toLocaleString('es-HN', {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2
+                })} (${cantidadFormateada})`, 
+                style: 'tableCell' 
+              },
               { 
                 text: dato.ESTATUS === 1 ? 'Vigente' : 'Rectificado', 
                 style: dato.ESTATUS === 1 ? 'vigente' : 'rectificado'
@@ -1206,6 +1237,8 @@ exportToPDF(): void {
             .reduce((total, dato) => total + parseFloat(dato.CANTIDAD_DECLARADA), 0);
           
           const diferencia = consulta.sar.importeTotalVentas - totalDeclarado;
+          const diferenciaAbs = Math.abs(diferencia);
+          const diferenciaFormateada = this.formatNumberWithUnits(diferenciaAbs);
           let textoComparacion = '';
           let estiloDiferencia = '';
 
@@ -1233,7 +1266,13 @@ exportToPDF(): void {
               body: [
                 [{ text: 'Diferencia', style: 'tableHeader' }, { text: 'Análisis', style: 'tableHeader' }],
                 [
-                  { text: `L. ${Math.abs(diferencia).toFixed(2)}`, style: estiloDiferencia },
+                  { 
+                    text: `L. ${diferenciaAbs.toLocaleString('es-HN', {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2
+                    })} (${diferenciaFormateada})`, 
+                    style: estiloDiferencia 
+                  },
                   { text: textoComparacion, style: estiloDiferencia }
                 ]
               ]

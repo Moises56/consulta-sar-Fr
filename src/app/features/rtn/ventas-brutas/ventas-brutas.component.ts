@@ -1297,61 +1297,82 @@ exportToPDF(): void {
             fila['Fecha Declaración'] = '';
           }
           
-          // Si es la primera fila de esta consulta, agregamos la diferencia
+          // Agregar la diferencia y el análisis (solo para la primera fila de cada consulta)
           if (i === 0) {
             const totalDeclarado = consulta.amdc
               .filter(dato => dato.ESTATUS === 1)
               .reduce((total, dato) => total + parseFloat(dato.CANTIDAD_DECLARADA), 0);
             
             const diferencia = consulta.sar.importeTotalVentas - totalDeclarado;
-            fila['Diferencia'] = Math.abs(diferencia);
+            let textoComparacion = '';
             
             if (diferencia > 0) {
-              fila['Análisis'] = 'En contra de la AMDC (valor no declarado)';
+              textoComparacion = 'En contra de AMDC (no declarado)';
             } else if (diferencia < 0) {
-              fila['Análisis'] = 'A favor de la AMDC (valor sobredeclarado)';
+              textoComparacion = 'A favor de AMDC (sobredeclarado)';
             } else {
-              fila['Análisis'] = 'Valores iguales (declaración correcta)';
+              textoComparacion = 'Valores iguales';
             }
+            
+            fila['Diferencia'] = Math.abs(diferencia);
+            fila['Análisis'] = textoComparacion;
           } else {
             fila['Diferencia'] = '';
             fila['Análisis'] = '';
           }
+
+          // Columnas adicionales solicitadas
+          if (i === 0) {
+            // Calculamos el monto ImptoBruto (1.5% del total de ventas)
+            fila['ImptoBruto'] = consulta.sar.importeTotalVentas * 0.015;
+            
+            // La tasa siempre es 1.5%
+            fila['Tasa'] = '1.5%';
+            
+            // Usuario que realizó la consulta
+            const currentUser = this.authService.currentUser;
+            fila['Usuario'] = currentUser ? currentUser.name : 'Usuario del sistema';
+            
+            // Fecha de consulta - formato fecha
+            fila['Fecha Consulta'] = new Date().toLocaleDateString();
+          } else {
+            fila['ImptoBruto'] = '';
+            fila['Tasa'] = '';
+            fila['Usuario'] = '';
+            fila['Fecha Consulta'] = '';
+          }
           
           datosExcel.push(fila);
         }
-        
-        // Agregar fila vacía entre consultas excepto la última
-        if (index < this.consultasRealizadas.length - 1) {
-          datosExcel.push({});
-        }
       });
 
-      // Crear una nueva hoja de cálculo
-      const worksheet: XLSX.WorkSheet = XLSX.utils.json_to_sheet(datosExcel);
-      
-      // Configurar anchos de columnas
-      const wscols = [
-        { wch: 5 },      // #
-        { wch: 20 },     // RTN
-        { wch: 30 },     // Nombre Comercial
-        { wch: 10 },     // Año
-        { wch: 15 },     // Total Ventas SAR
-        { wch: 15 },     // Cantidad Declarada
-        { wch: 12 },     // Estatus
-        { wch: 15 },     // Fecha Declaración
-        { wch: 15 },     // Diferencia
-        { wch: 40 }      // Análisis
+      // Crear una hoja de trabajo y luego un libro
+      const worksheet = XLSX.utils.json_to_sheet(datosExcel);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Consultas VB');
+
+      // Ajustar anchos de columna automáticamente
+      const columnas = [
+        { wch: 5 },  // #
+        { wch: 20 }, // RTN
+        { wch: 40 }, // Nombre Comercial
+        { wch: 10 }, // Año
+        { wch: 15 }, // Total Ventas SAR
+        { wch: 15 }, // Cantidad Declarada
+        { wch: 15 }, // Estatus
+        { wch: 15 }, // Fecha Declaración
+        { wch: 15 }, // Diferencia
+        { wch: 30 }, // Análisis
+        { wch: 15 }, // ImptoBruto
+        { wch: 10 }, // Tasa
+        { wch: 25 }, // Usuario
+        { wch: 15 }  // Fecha Consulta
       ];
       
-      worksheet['!cols'] = wscols;
-      
-      // Crear un libro de trabajo y añadir la hoja
-      const workbook: XLSX.WorkBook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, 'Historial Consultas');
-      
-      // Generar el archivo Excel y descargarlo
-      XLSX.writeFile(workbook, 'historial-consultas-ventas-brutas.xlsx');
+      worksheet['!cols'] = columnas;
+
+      // Generar el archivo Excel
+      XLSX.writeFile(workbook, 'reporte-ventas-brutas.xlsx');
       this.toastr.success('Excel generado con éxito');
     } catch (error) {
       console.error('Error al generar Excel:', error);
@@ -1361,12 +1382,7 @@ exportToPDF(): void {
 
   // Método para eliminar una consulta del historial
   eliminarConsulta(index: number): void {
-    if (index >= 0 && index < this.consultasRealizadas.length) {
-      // Eliminar la consulta del arreglo
-      this.consultasRealizadas.splice(index, 1);
-      
-      // Mostrar notificación
-      this.toastr.info('Consulta eliminada del historial');
-    }
+    this.consultasRealizadas.splice(index, 1);
+    this.toastr.success('Consulta eliminada del historial');
   }
 }

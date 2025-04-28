@@ -15,6 +15,12 @@ export interface DeclaracionAmdc {
   cantidadDeclarada: string;
   estatus: string;
   fecha: string;
+  anio?: string;
+  mes?: string;
+  ventasExentas?: number;
+  ventasExoneradas?: number;
+  ventasGravadas?: number;
+  impuesto?: number;
 }
 
 export interface ConsultasVbResponse {

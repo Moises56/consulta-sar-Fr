@@ -234,25 +234,42 @@ export class ProfileComponent implements OnInit {
       this.error = null;
       this.successMessage = null;
 
+      // Verificar si el usuario está intentando cambiar su contraseña
+      const currentPassword = this.profileForm.get('currentPassword')?.value;
+      const newPassword = this.profileForm.get('newPassword')?.value;
+
+      // Si el usuario está cambiando su contraseña
+      if (currentPassword && newPassword) {
+        this.authService.changeOwnPassword(currentPassword, newPassword).subscribe({
+          next: () => {
+            this.loading = false;
+            this.successMessage = 'Contraseña actualizada exitosamente';
+            this.profileForm.get('currentPassword')?.reset();
+            this.profileForm.get('newPassword')?.reset();
+            this.profileForm.get('confirmPassword')?.reset();
+          },
+          error: () => {
+            this.loading = false;
+            // Los mensajes de error los maneja el servicio AuthService
+          }
+        });
+        return;
+      }
+
       const updateData = {
         ...this.profileForm.value,
         id: this.currentUser.id
       };
 
-      // Only include password fields if current password is provided
-      if (!updateData.currentPassword) {
-        delete updateData.currentPassword;
-        delete updateData.newPassword;
-        delete updateData.confirmPassword;
-      }
+      // Eliminar campos de contraseña del objeto de actualización de datos de perfil
+      delete updateData.currentPassword;
+      delete updateData.newPassword;
+      delete updateData.confirmPassword;
 
       this.userService.updateUser(this.currentUser.id, updateData).subscribe({
         next: () => {
           this.loading = false;
           this.successMessage = 'Perfil actualizado exitosamente';
-          this.profileForm.get('currentPassword')?.reset();
-          this.profileForm.get('newPassword')?.reset();
-          this.profileForm.get('confirmPassword')?.reset();
 
           // Update the current user in auth service
           // Check auth status to refresh user data

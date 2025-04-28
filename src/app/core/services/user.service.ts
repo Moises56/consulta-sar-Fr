@@ -47,7 +47,8 @@ export class UserService {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 
-  changePassword(id: string, password: string): Observable<void> {
-    return this.http.patch<void>(`${this.apiUrl}/${id}/password`, { password });
+  changePassword(id: string, password: string): Observable<{message: string}> {
+    // Cambiado a usar el nuevo endpoint de autenticación
+    return this.http.patch<{message: string}>(`${environment.apiUrl}/auth/users/${id}/password`, { password });
   }
 }

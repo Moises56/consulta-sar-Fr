@@ -199,7 +199,7 @@ import { User } from '../../core/interfaces/user.interface';
         >
           <div class="p-5 flex-1">
             <div class="flex items-start">
-              <div class="flex-shrink-0 bg-blue-500 rounded-md p-3">
+              <div class="flex-shrink-0 bg-[#5ccedf] rounded-md p-3">
                 <svg
                   class="h-6 w-6 text-white"
                   fill="none"
@@ -224,7 +224,7 @@ import { User } from '../../core/interfaces/user.interface';
             <div class="mt-4">
               <a
                 routerLink="/perfil"
-                class="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
+                class="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-[#5ccedf] hover:bg-[#4c828a] hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
               >
                 Ver perfil
                 <svg
@@ -251,7 +251,7 @@ import { User } from '../../core/interfaces/user.interface';
         >
           <div class="p-5 flex-1">
             <div class="flex items-start">
-              <div class="flex-shrink-0 bg-blue-500 rounded-md p-3">
+              <div class="flex-shrink-0 bg-amber-500 rounded-md p-3">
                 <svg
                   class="h-6 w-6 text-white"
                   fill="none"
@@ -262,23 +262,23 @@ import { User } from '../../core/interfaces/user.interface';
                     stroke-linecap="round"
                     stroke-linejoin="round"
                     stroke-width="2"
-                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                   />
                 </svg>
               </div>
               <div class="ml-5 flex-1">
-                <h3 class="text-lg font-medium text-gray-900">Mi Perfil</h3>
+                <h3 class="text-lg font-medium text-gray-900">Mis Consultas</h3>
                 <p class="mt-1 text-sm text-gray-500">
-                  Actualiza tu información personal
+                  Visualiza y gestiona tus consultas realizadas
                 </p>
               </div>
             </div>
             <div class="mt-4">
               <a
-                routerLink="/perfil"
-                class="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
+                routerLink="/mis-consultas-vb"
+                class="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-amber-600 hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 transition-colors duration-200"
               >
-                Ver perfil
+                Ver mis consultas
                 <svg
                   class="ml-1 h-4 w-4"
                   fill="none"
@@ -296,7 +296,6 @@ import { User } from '../../core/interfaces/user.interface';
             </div>
           </div>
         </div>
-
       </div>
     </div>
   `,

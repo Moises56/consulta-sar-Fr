@@ -4,6 +4,7 @@ import { RouterModule } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { DatosAMDCService } from '../../../core/services/datos-amdc.service';
 import { DatosAMDC } from '../../../core/interfaces/datos-amdc.interface';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-datos-amdc-list',
@@ -19,7 +20,7 @@ import { DatosAMDC } from '../../../core/interfaces/datos-amdc.interface';
                 Datos AMDC
               </h2>
             </div>
-            <div class="mt-4 flex md:mt-0 md:ml-4">
+            <div *ngIf="isAdmin" class="mt-4 flex md:mt-0 md:ml-4">
               <a routerLink="new"
                 class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                 Nuevo Registro
@@ -124,13 +125,13 @@ import { DatosAMDC } from '../../../core/interfaces/datos-amdc.interface';
                         <div class="text-sm text-gray-900">{{ dato.ESTATUS }}</div>
                       </td>
                       <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <a [routerLink]="[dato.id]" class="text-indigo-600 hover:text-indigo-900 mr-4 inline-flex items-center">
+                        <a *ngIf="isAdmin" [routerLink]="[dato.id]" class="text-indigo-600 hover:text-indigo-900 mr-4 inline-flex items-center">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-5m-1.414-9.414a2 2 0 1 1 2.828 0L11.828 15H9v-2.828l8.586-8.586z" />
                         </svg>
                           <!-- Editar -->
                         </a>
-                        <button (click)="deleteDatoAmdc(dato.id)" class="text-red-600 hover:text-red-900 inline-flex items-center">
+                        <button *ngIf="isAdmin" (click)="deleteDatoAmdc(dato.id)" class="text-red-600 hover:text-red-900 inline-flex items-center">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0 1 16.138 21H7.862a2 2 0 0 1-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v3M4 7h16" />
                         </svg>
@@ -173,13 +174,13 @@ import { DatosAMDC } from '../../../core/interfaces/datos-amdc.interface';
               </svg>
                 <!-- Ver -->
               </button>
-              <a [routerLink]="[dato.id]" class="text-sm text-indigo-600 hover:text-indigo-900 flex items-center">
+              <a *ngIf="isAdmin" [routerLink]="[dato.id]" class="text-sm text-indigo-600 hover:text-indigo-900 flex items-center">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-5m-1.414-9.414a2 2 0 1 1 2.828 0L11.828 15H9v-2.828l8.586-8.586z" />
               </svg>
                 <!-- Editar -->
               </a>
-              <button (click)="deleteDatoAmdc(dato.id)" class="text-sm text-red-600 hover:text-red-900 flex items-center">
+              <button *ngIf="isAdmin" (click)="deleteDatoAmdc(dato.id)" class="text-sm text-red-600 hover:text-red-900 flex items-center">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0 1 16.138 21H7.862a2 2 0 0 1-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v3M4 7h16" />
               </svg>
@@ -332,6 +333,7 @@ export class DatosAmdcListComponent implements OnInit {
   totalItems = 0;
   hasNextPage = false;
   Math = Math; // Make Math available in template
+  isAdmin = false; // Variable to store if the user is an admin
   
   // Modal variables
   isModalOpen = false;
@@ -339,7 +341,8 @@ export class DatosAmdcListComponent implements OnInit {
 
   constructor(
     private datosAmdcService: DatosAMDCService,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private authService: AuthService
   ) {
     this.filterForm = this.fb.group({
       rtn: [''],
@@ -350,6 +353,17 @@ export class DatosAmdcListComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadDatosAmdc();
+    this.checkAdminStatus(); // Verificar el rol de usuario
+  }
+
+  checkAdminStatus(): void {
+    // Usar el getter isAdmin del AuthService para verificar si el usuario es administrador
+    this.isAdmin = this.authService.isAdmin;
+    
+    // También podemos suscribirnos a cambios en el usuario actual
+    this.authService.currentUser$.subscribe(user => {
+      this.isAdmin = user?.role === 'ADMIN';
+    });
   }
 
   loadDatosAmdc(): void {

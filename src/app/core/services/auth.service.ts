@@ -170,4 +170,41 @@ export class AuthService {
   get isAdmin(): boolean {
     return this.currentUserSubject.value?.role === 'ADMIN';
   }
+
+  /**
+   * Permite al usuario actual cambiar su propia contraseña
+   * @param currentPassword La contraseña actual del usuario
+   * @param newPassword La nueva contraseña del usuario
+   * @returns Un Observable con el mensaje de éxito
+   */
+  changeOwnPassword(currentPassword: string, newPassword: string): Observable<{message: string}> {
+    return this.http.patch<{message: string}>(
+      `${environment.apiUrl}/auth/profile/password`, 
+      { currentPassword, newPassword },
+      { withCredentials: true }
+    ).pipe(
+      tap(response => {
+        console.log('Password changed successfully');
+        this.toastr.success(response.message || 'Contraseña actualizada exitosamente');
+      }),
+      catchError((error: HttpErrorResponse) => {
+        console.error('Password change failed:', error);
+        
+        if (error.error?.message) {
+          // Si hay múltiples mensajes de error (array), los mostramos todos
+          if (Array.isArray(error.error.message)) {
+            error.error.message.forEach((msg: string) => {
+              this.toastr.error(msg);
+            });
+          } else {
+            this.toastr.error(error.error.message);
+          }
+        } else {
+          this.toastr.error('Error al cambiar la contraseña');
+        }
+        
+        return throwError(() => error);
+      })
+    );
+  }
 }

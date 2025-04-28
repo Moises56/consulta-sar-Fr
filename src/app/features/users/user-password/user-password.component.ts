@@ -4,6 +4,7 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { Router, ActivatedRoute } from '@angular/router';
 import { UserService } from '../../../core/services/user.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-user-password',
@@ -71,7 +72,8 @@ export class UserPasswordComponent implements OnInit {
     private userService: UserService,
     private authService: AuthService,
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private toastr: ToastrService
   ) {
     this.passwordForm = this.fb.group({
       password: ['', [Validators.required]],
@@ -100,7 +102,14 @@ export class UserPasswordComponent implements OnInit {
   onSubmit(): void {
     if (this.passwordForm.valid && this.userId) {
       this.userService.changePassword(this.userId, this.passwordForm.get('password')?.value).subscribe({
-        next: () => {
+        next: (response) => {
+          // Mostrar mensaje de éxito si lo hay
+          if (response && response.message) {
+            this.toastr.success(response.message);
+          } else {
+            this.toastr.success('Contraseña actualizada exitosamente');
+          }
+          
           // Redirect to appropriate page based on user role and if changing own password
           if (this.userId === this.authService.currentUser?.id) {
             this.router.navigate(['/perfil']);
@@ -110,7 +119,12 @@ export class UserPasswordComponent implements OnInit {
         },
         error: (error) => {
           console.error('Error changing password:', error);
-          // Here you would typically show an error message
+          // Mostrar mensaje de error
+          if (error.error && error.error.message) {
+            this.toastr.error(error.error.message);
+          } else {
+            this.toastr.error('Error al cambiar la contraseña');
+          }
         }
       });
     }

@@ -6,6 +6,15 @@ import { MisConsultasVbService } from '../../../core/services/mis-consultas-vb.s
 import { ToastrService } from 'ngx-toastr';
 import { ConsultaVb } from '../../../core/interfaces/mis-consultas-vb.interface';
 import { catchError, tap, finalize, of } from 'rxjs';
+import { AuthService } from '../../../core/services/auth.service';
+
+// Importaciones para exportación a PDF y Excel
+import * as XLSX from 'xlsx';
+// Importar pdfMake de forma compatible con TypeScript
+declare const pdfMake: any;
+// Necesario para que pdfmake funcione
+import 'pdfmake/build/pdfmake';
+import 'pdfmake/build/vfs_fonts';
 
 @Component({
   selector: 'app-mis-consultas-vb-list',
@@ -119,6 +128,45 @@ import { catchError, tap, finalize, of } from 'rxjs';
 
         <!-- List of saved consultations -->
         <div *ngIf="!loading && consultas.length > 0" class="bg-white shadow overflow-hidden sm:rounded-md">
+          <div class="flex flex-col sm:flex-row justify-between items-center p-4 border-b">
+            <h3 class="text-lg font-medium text-gray-900">Consultas guardadas</h3>
+            <div class="flex flex-wrap items-center gap-2 mt-3 sm:mt-0">
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                {{totalItems}} {{totalItems === 1 ? 'consulta' : 'consultas'}}
+              </span>
+              <div class="flex items-center gap-2">
+                <button 
+                  (click)="exportToPDF()" 
+                  class="inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                  [disabled]="exporting"
+                >
+                  <svg *ngIf="exporting" class="animate-spin h-4 w-4 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  <svg *ngIf="!exporting" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                  </svg>
+                  PDF
+                </button>
+                <button 
+                  (click)="exportToExcel()" 
+                  class="inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                  [disabled]="exporting"
+                >
+                  <svg *ngIf="exporting" class="animate-spin h-4 w-4 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  <svg *ngIf="!exporting" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  Excel
+                </button>
+              </div>
+            </div>
+          </div>
+
           <ul role="list" class="divide-y divide-gray-200">
             <li *ngFor="let consulta of consultas">
               <a routerLink="/mis-consultas-vb/{{consulta.id}}" class="block hover:bg-gray-50">
@@ -253,6 +301,7 @@ import { catchError, tap, finalize, of } from 'rxjs';
 export class MisConsultasVbListComponent implements OnInit {
   consultas: ConsultaVb[] = [];
   loading = false;
+  exporting = false;
   error: string | null = null;
   searchForm: FormGroup;
 
@@ -266,7 +315,8 @@ export class MisConsultasVbListComponent implements OnInit {
   constructor(
     private misConsultasVbService: MisConsultasVbService,
     private fb: FormBuilder,
-    private toastr: ToastrService
+    private toastr: ToastrService,
+    private authService: AuthService
   ) {
     this.searchForm = this.fb.group({
       rtn: ['']
@@ -355,5 +405,353 @@ export class MisConsultasVbListComponent implements OnInit {
     if (!date) return '';
     const dateObj = new Date(date);
     return `${dateObj.toLocaleDateString('es-HN')} ${dateObj.toLocaleTimeString('es-HN', {hour: '2-digit', minute:'2-digit'})}`;
+  }
+
+  // Método auxiliar para cargar imágenes como base64
+  loadImageAsBase64(url: string): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = 'Anonymous'; // Necesario para permitir CORS
+      
+      img.onload = () => {
+        try {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          
+          canvas.width = img.width;
+          canvas.height = img.height;
+          
+          if (ctx) {
+            ctx.drawImage(img, 0, 0);
+            // Convertir a base64
+            const dataURL = canvas.toDataURL('image/png');
+            resolve(dataURL);
+          } else {
+            reject(new Error('No se pudo obtener el contexto del canvas'));
+          }
+        } catch (error) {
+          reject(error);
+        }
+      };
+      
+      img.onerror = (error) => {
+        reject(error);
+      };
+      
+      img.src = url;
+    });
+  }
+
+  // Método para exportar a PDF
+  exportToPDF(): void {
+    if (this.consultas.length === 0) {
+      this.toastr.warning('No hay consultas para exportar');
+      return;
+    }
+
+    this.exporting = true;
+
+    try {
+      // Rutas de los logos
+      const logoPath = 'logos/logo.png';
+      const logoBuenCorazonPath = 'logos/logoBuenCorazon.png';
+      
+      // Cargar las imágenes primero
+      this.loadImageAsBase64(logoPath).then(logoData => {
+        this.loadImageAsBase64(logoBuenCorazonPath).then(logoBuenCorazonData => {
+          
+          // Fecha y hora actual y usuario que generó el reporte
+          const now = new Date();
+          const currentUser = this.authService.currentUser;
+          
+          // Crear el documento con los estilos
+          const docDefinition: any = {
+            pageSize: 'LETTER',
+            // Márgenes
+            pageMargins: [40, 80, 40, 40],
+
+            // Encabezado del documento
+            header: {
+              margin: [40, 20, 40, 20],
+              columns: [
+                {
+                  image: logoData,
+                  width: 80,
+                  alignment: 'left',
+                  margin: [0, 0, 0, 0],
+                },
+                {
+                  stack: [
+                    {
+                      text: 'Unidad Municipal de Inteligencia Fiscal',
+                      alignment: 'center',
+                      fontSize: 16,
+                      bold: true,
+                      margin: [0, 10, 0, 5],
+                      color: 'black',
+                    },
+                    {
+                      text: 'Mis Consultas de Ventas Brutas',
+                      alignment: 'center',
+                      fontSize: 12,
+                      bold: true,
+                      margin: [0, 0, 0, 0],
+                      color: '#5ccedf',
+                    },
+                  ],
+                  alignment: 'center',
+                },
+                {
+                  image: logoBuenCorazonData,
+                  width: 80,
+                  alignment: 'right',
+                  margin: [0, 0, 0, 0],
+                },
+              ],
+            },
+
+            // Pie de página
+            footer: (currentPage: number, pageCount: number) => {
+              return {
+                columns: [
+                  {
+                    text: '© 2025 Alcaldía Municipal del Distrito Central',
+                    alignment: 'left',
+                    fontSize: 8,
+                    margin: [40, 5, 0, 0],
+                    color: '#000',
+                  },
+                  {
+                    text: `Página ${currentPage} de ${pageCount}`,
+                    alignment: 'right',
+                    fontSize: 8,
+                    margin: [0, 5, 40, 0],
+                    color: '#000',
+                  },
+                ],
+              };
+            },
+
+            // Contenido del documento
+            content: [
+              // Metadata como fecha y usuario
+              {
+                columns: [
+                  { width: '*', text: '' }, // Columna vacía para espaciado
+                  {
+                    width: 'auto',
+                    stack: [
+                      {
+                        text: `Generado: ${now.toLocaleDateString()} ${now.toLocaleTimeString()}`,
+                        fontSize: 8,
+                        color: 'black',
+                      },
+                      {
+                        text: `Generado por: ${
+                          currentUser ? currentUser.name : 'Usuario del sistema'
+                        }`,
+                        fontSize: 8,
+                        color: 'black',
+                      },
+                    ],
+                    alignment: 'right',
+                  },
+                ],
+                margin: [0, 0, 0, 10],
+              },
+
+              // Información general
+              {
+                text: `Total de consultas: ${this.totalItems}`,
+                style: 'subheader',
+                margin: [0, 0, 0, 10],
+              },
+            ],
+
+            // Estilos para el documento
+            styles: {
+              header: {
+                fontSize: 14,
+                bold: true,
+                margin: [0, 10, 0, 5],
+                color: 'black',
+              },
+              subheader: {
+                fontSize: 12,
+                bold: true,
+                margin: [0, 10, 0, 5],
+                color: 'black',
+              },
+              tableHeader: {
+                bold: true,
+                fontSize: 10,
+                color: 'white',
+                fillColor: '#5ccedf',
+              },
+              tableCell: {
+                fontSize: 9,
+                color: 'black',
+              },
+              vigente: {
+                fontSize: 9,
+                color: '#059669',
+              },
+              rectificado: {
+                fontSize: 9,
+                color: '#DC2626',
+              },
+              diferenciaPositiva: {
+                fontSize: 9,
+                color: '#DC2626',
+              },
+              diferenciaNegativa: {
+                fontSize: 9,
+                color: '#059669',
+              },
+              diferenciaCero: {
+                fontSize: 9,
+                color: '#4B5563',
+              },
+            },
+          };
+
+          // Crear la tabla de consultas
+          const bodyData = [
+            [
+              { text: '#', style: 'tableHeader' },
+              { text: 'RTN', style: 'tableHeader' },
+              { text: 'Nombre Comercial', style: 'tableHeader' },
+              { text: 'Año', style: 'tableHeader' },
+              { text: 'Ventas SAR', style: 'tableHeader' },
+              { text: 'Diferencia', style: 'tableHeader' },
+              { text: 'Análisis', style: 'tableHeader' },
+              { text: 'Fecha', style: 'tableHeader' },
+            ],
+          ];
+
+          this.consultas.forEach((consulta, index) => {
+            const fechaFormateada = this.formatDate(consulta.fechaConsulta);
+            
+            let estiloAnalisis;
+            if (consulta.analisis.includes('contra')) {
+              estiloAnalisis = 'diferenciaPositiva';
+            } else if (consulta.analisis.includes('favor')) {
+              estiloAnalisis = 'diferenciaNegativa';
+            } else {
+              estiloAnalisis = 'diferenciaCero';
+            }
+            
+            bodyData.push([
+              { text: (index + 1).toString(), style: 'tableCell' },
+              { text: consulta.rtn, style: 'tableCell' },
+              { text: consulta.nombreComercial, style: 'tableCell' },
+              { text: consulta.anio.toString(), style: 'tableCell' },
+              { text: `L. ${consulta.importeTotalVentas.toLocaleString('es-HN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, style: 'tableCell' },
+              { text: `L. ${consulta.diferencia.toLocaleString('es-HN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, style: estiloAnalisis },
+              { text: consulta.analisis, style: estiloAnalisis },
+              { text: fechaFormateada, style: 'tableCell' },
+            ]);
+          });
+
+          // Agregar la tabla al documento
+          docDefinition.content.push({
+            table: {
+              headerRows: 1,
+              widths: [20, 50, '*', 40, 60, 60, '*', 80],
+              body: bodyData,
+            },
+            layout: {
+              fillColor: function(rowIndex: number) {
+                return (rowIndex % 2 === 0) ? '#f9fafb' : null;
+              },
+              hLineWidth: function(i: number, node: any) {
+                return (i === 0 || i === node.table.body.length) ? 1 : 0.5;
+              },
+              vLineWidth: function() {
+                return 0;
+              },
+              hLineColor: function(i: number) {
+                return (i === 0 || i === 1) ? '#aaaaaa' : '#dddddd';
+              },
+            },
+          });
+          
+          // Generar el PDF con el formato mejorado
+          pdfMake.createPdf(docDefinition).download('mis-consultas-ventas-brutas.pdf');
+          this.toastr.success('PDF generado con éxito');
+          this.exporting = false;
+        }).catch(error => {
+          console.error('Error al cargar logoBuenCorazon:', error);
+          this.toastr.error('Error al generar el PDF: No se pudo cargar una de las imágenes');
+          this.exporting = false;
+        });
+      }).catch(error => {
+        console.error('Error al cargar logo:', error);
+        this.toastr.error('Error al generar el PDF: No se pudo cargar una de las imágenes');
+        this.exporting = false;
+      });
+    } catch (error) {
+      console.error('Error al generar PDF:', error);
+      this.toastr.error('Error al generar el PDF');
+      this.exporting = false;
+    }
+  }
+
+  // Método para exportar a Excel
+  exportToExcel(): void {
+    if (this.consultas.length === 0) {
+      this.toastr.warning('No hay consultas para exportar');
+      return;
+    }
+
+    this.exporting = true;
+
+    try {
+      const datosExcel: any[] = [];
+
+      // Convertir las consultas al formato necesario para Excel
+      this.consultas.forEach((consulta, index) => {
+        datosExcel.push({
+          'N°': index + 1,
+          'RTN': consulta.rtn,
+          'Nombre Comercial': consulta.nombreComercial,
+          'Año': consulta.anio,
+          'Ventas SAR': consulta.importeTotalVentas,
+          'Diferencia': consulta.diferencia,
+          'Análisis': consulta.analisis,
+          'Fecha Consulta': this.formatDate(consulta.fechaConsulta)
+        });
+      });
+
+      // Crear una nueva hoja de cálculo
+      const worksheet: XLSX.WorkSheet = XLSX.utils.json_to_sheet(datosExcel);
+      
+      // Configurar anchos de columnas
+      const wscols = [
+        { wch: 5 },      // N°
+        { wch: 20 },     // RTN
+        { wch: 30 },     // Nombre Comercial
+        { wch: 10 },     // Año
+        { wch: 15 },     // Ventas SAR
+        { wch: 15 },     // Diferencia
+        { wch: 40 },     // Análisis
+        { wch: 20 }      // Fecha Consulta
+      ];
+      
+      worksheet['!cols'] = wscols;
+      
+      // Crear un libro de trabajo y añadir la hoja
+      const workbook: XLSX.WorkBook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Mis Consultas');
+      
+      // Generar el archivo Excel y descargarlo
+      XLSX.writeFile(workbook, 'mis-consultas-ventas-brutas.xlsx');
+      this.toastr.success('Excel generado con éxito');
+      this.exporting = false;
+    } catch (error) {
+      console.error('Error al generar Excel:', error);
+      this.toastr.error('Error al generar el Excel');
+      this.exporting = false;
+    }
   }
 }

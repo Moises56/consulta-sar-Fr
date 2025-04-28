@@ -273,7 +273,7 @@ type CustomError = { status: number; message: string; isUserMessage: boolean };
                       </div>
                       <div>
                         <dt class="text-sm font-medium text-gray-500">Total Ventas SAR</dt>
-                        <dd class="mt-1 text-sm text-gray-900 font-semibold">L. {{totalVentas | number:'1.2-2'}}</dd>
+                        <dd class="mt-1 text-sm text-gray-900 font-semibold">L. {{totalVentas | number:'1.2-2'}} <span class="text-gray-500">({{formatNumberWithUnits(totalVentas)}})</span></dd>
                       </div>
                     </dl>
                   </div>
@@ -288,7 +288,7 @@ type CustomError = { status: number; message: string; isUserMessage: boolean };
                     <dd class="mt-1 text-sm text-gray-900">
                       <div class="space-y-1.5">
                         <div *ngFor="let dato of datosAmdc" class="flex flex-col sm:flex-row sm:justify-between sm:items-center py-1.5 px-2 rounded-md hover:bg-gray-50">
-                          <span class="font-semibold">L. {{dato.CANTIDAD_DECLARADA | number:'1.2-2'}}</span>
+                          <span class="font-semibold">L. {{dato.CANTIDAD_DECLARADA | number:'1.2-2'}} <span class="text-gray-500">({{formatNumberWithUnits(parseFloat(dato.CANTIDAD_DECLARADA))}})</span></span>
                           <div class="flex items-center justify-between sm:justify-end mt-1 sm:mt-0 gap-3">
                             <span [class]="dato.ESTATUS === 1 ? 'text-green-600 text-xs font-medium bg-green-100 px-2 py-0.5 rounded-full' : 'text-red-600 text-xs font-medium bg-red-100 px-2 py-0.5 rounded-full'">
                               {{dato.ESTATUS === 1 ? 'Vigente' : 'Rectificado'}}
@@ -402,7 +402,7 @@ type CustomError = { status: number; message: string; isUserMessage: boolean };
                     <div class="mt-1 space-y-1 w-full">
                       <div *ngFor="let dato of consulta.amdc">
                         <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center text-sm w-full">
-                          <span class="font-semibold">L. {{dato.CANTIDAD_DECLARADA | number:'1.2-2'}}</span>
+                          <span class="font-semibold">L. {{dato.CANTIDAD_DECLARADA | number:'1.2-2'}} <span class="text-gray-500">({{formatNumberWithUnits(parseFloat(dato.CANTIDAD_DECLARADA))}})</span></span>
                           <div class="flex items-center justify-between sm:justify-end mt-1 sm:mt-0 gap-3">
                             <span [class]="dato.ESTATUS === 1 ? 'text-green-600 text-xs font-medium bg-green-100 px-2 py-0.5 rounded-full' : 'text-red-600 text-xs font-medium bg-red-100 px-2 py-0.5 rounded-full'">
                               {{dato.ESTATUS === 1 ? 'Vigente' : 'Rectificado'}}
@@ -462,6 +462,8 @@ export class VentasBrutasComponent implements OnInit {
   consultasRealizadas: Array<{ sar: VentasBrutasData, amdc: DatosAmdc[] }> = [];
   // Haciendo disponible Math para usar en el template
   Math = Math;
+  // Haciendo disponible parseFloat para usar en el template
+  parseFloat = parseFloat;
   
   // Variables para el manejo de reintentos
   isRetrying = false;
@@ -494,6 +496,47 @@ export class VentasBrutasComponent implements OnInit {
     '11': 'Noviembre',
     '12': 'Diciembre'
   };
+
+  // Método mejorado para formatear números mostrando unidades (mil, millones, etc.)
+  formatNumberWithUnits(value: number): string {
+    if (!value && value !== 0) return '';
+    
+    // Formatear con separador de miles y dos decimales
+    const formatter = new Intl.NumberFormat('es-HN', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+    
+    const formattedNumber = formatter.format(value);
+    
+    // Para valores menores a mil, solo mostrar el número formateado
+    if (value < 1000) {
+      return formattedNumber;
+    }
+    
+    // Para valores mayores, aplicar unidades más profesionales
+    const magnitud = Math.floor(Math.log10(value) / 3);
+    const unidades = ['', 'mil', 'millones', 'mil millones', 'billones'];
+    
+    // Si es mil exacto, mostrar solo "mil"
+    if (value === 1000) {
+      return 'mil';
+    }
+    
+    if (magnitud >= 1 && magnitud < unidades.length) {
+      // Calcular el valor dividido por la magnitud
+      const valorBase = value / Math.pow(1000, magnitud);
+      // Formatear con 2 decimales si no es un número entero
+      const valorFormateado = Number.isInteger(valorBase) 
+        ? Math.floor(valorBase).toString()
+        : formatter.format(valorBase);
+      
+      return `${valorFormateado} ${unidades[magnitud]}`;
+    }
+    
+    // Si no se puede aplicar una unidad, devolver el formato con separadores
+    return formattedNumber;
+  }
 
   constructor(
     private fb: FormBuilder,

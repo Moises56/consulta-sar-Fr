@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
@@ -12,6 +12,9 @@ import { forkJoin, catchError, of } from 'rxjs';
 import * as XLSX from 'xlsx';
 // Importar AuthService para obtener el usuario actual
 import { AuthService } from '../../../core/services/auth.service';
+// Importar el nuevo servicio MisConsultasVbService
+import { MisConsultasVbService } from '../../../core/services/mis-consultas-vb.service';
+import { ConsultaVb, DeclaracionAmdc } from '../../../core/interfaces/mis-consultas-vb.interface';
 
 // Importamos pdfMake de forma compatible con TypeScript
 declare const pdfMake: any;
@@ -225,7 +228,7 @@ type CustomError = { status: number; message: string; isUserMessage: boolean };
             <div class="flex flex-col sm:flex-row sm:items-center">
               <div class="flex-shrink-0 self-center sm:self-auto">
                 <svg class="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293-1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
                 </svg>
               </div>
               <div class="mt-3 sm:mt-0 sm:ml-3">
@@ -368,7 +371,6 @@ type CustomError = { status: number; message: string; isUserMessage: boolean };
                   </div>
                 </div>
               </div>
-            </div>
             
             <div class="border-t border-gray-200 divide-y divide-gray-200">
               <div *ngFor="let consulta of consultasRealizadas; let i = index" class="px-4 py-5 sm:p-6 w-full">
@@ -451,7 +453,7 @@ type CustomError = { status: number; message: string; isUserMessage: boolean };
     </div>
   `
 })
-export class VentasBrutasComponent {
+export class VentasBrutasComponent implements OnInit {
   searchForm: FormGroup;
   loading = false;
   error: string | null = null;
@@ -498,7 +500,8 @@ export class VentasBrutasComponent {
     private rtnService: RtnService,
     private amdcService: AmdcService,
     private toastr: ToastrService,
-    private authService: AuthService
+    private authService: AuthService,
+    private misConsultasVbService: MisConsultasVbService
   ) {
     this.searchForm = this.fb.group({
       rtn: ['', [Validators.required, Validators.pattern('^[0-9]{14}$')]],
@@ -525,6 +528,41 @@ export class VentasBrutasComponent {
     if (this.currentYear < startYear || this.currentYear > endYear) {
       this.currentYear = startYear;
     }
+  }
+
+  ngOnInit(): void {
+    this.loadSavedConsultations();
+  }
+
+  // Método para cargar consultas guardadas desde el backend
+  loadSavedConsultations(): void {
+    this.misConsultasVbService.getConsultas().subscribe({
+      next: (response) => {
+        if (response && response.data) {
+          this.consultasRealizadas = response.data.map((consulta: ConsultaVb) => ({
+            sar: {
+              anio: consulta.anio,
+              importeTotalVentas: consulta.importeTotalVentas
+            },
+            amdc: Array.isArray(consulta.declaracionesAmdc) ? consulta.declaracionesAmdc.map((declaracion: DeclaracionAmdc) => ({
+              CANTIDAD_DECLARADA: declaracion.cantidadDeclarada,
+              ESTATUS: declaracion.estatus === 'Vigente' ? 1 : 0,
+              FECHA: new Date(declaracion.fecha).toISOString(),
+              NOMBRE_COMERCIAL: consulta.nombreComercial,
+              RTN: consulta.rtn,
+              id: '',
+              ICS: '',
+              NOMBRE: consulta.nombreComercial,
+              ANIO: parseInt(consulta.anio)
+            })) : []
+          }));
+        }
+      },
+      error: (error: any) => {
+        console.error('Error al cargar consultas guardadas:', error);
+        this.toastr.error('Error al cargar consultas guardadas');
+      }
+    });
   }
 
   // Navegación del calendario
@@ -778,7 +816,7 @@ export class VentasBrutasComponent {
             this.ventasBrutas = results.sar.data.ventasBrutas;
             this.datosAmdc = results.amdc.data;
 
-            // Agregar al historial
+            // Agregar al historial local
             this.consultasRealizadas.push({
               sar: results.sar.data.ventasBrutas,
               amdc: results.amdc.data
@@ -799,8 +837,8 @@ export class VentasBrutasComponent {
               analisis = 'Valores iguales (declaración correcta)';
             }
 
-            // Preparar las declaraciones de AMDC con el formato requerido
-            const declaracionesAmdc = this.datosAmdc.map(dato => {
+            // Preparar las declaraciones de AMDC con el formato requerido para guardar
+            const declaracionesAmdc: DeclaracionAmdc[] = this.datosAmdc.map(dato => {
               return {
                 cantidadDeclarada: dato.CANTIDAD_DECLARADA,
                 estatus: dato.ESTATUS === 1 ? 'Vigente' : 'Rectificado',
@@ -808,8 +846,8 @@ export class VentasBrutasComponent {
               };
             });
             
-            // Mostrar en consola los datos de la consulta con el nuevo formato
-            console.log('DATOS DE CONSULTA REALIZADA:', {
+            // Crear el objeto de consulta para guardar en el backend
+            const consultaParaGuardar: ConsultaVb = {
               rtn: rtn,
               nombreComercial: this.datosAmdc.length > 0 ? this.datosAmdc[0].NOMBRE_COMERCIAL : 'N/A',
               anio: this.ventasBrutas.anio,
@@ -818,7 +856,20 @@ export class VentasBrutasComponent {
               diferencia: Math.abs(diferencia),
               analisis: analisis,
               fechaConsulta: new Date().toISOString()
-            });
+            };
+            
+            // Guardar la consulta en el backend
+            this.misConsultasVbService.guardarConsulta(consultaParaGuardar)
+              .subscribe({
+                next: (response) => {
+                  console.log('Consulta guardada con éxito en el backend:', response);
+                  this.toastr.success('Consulta guardada exitosamente', 'Guardado');
+                },
+                error: (error) => {
+                  console.error('Error al guardar la consulta:', error);
+                  this.toastr.warning('La consulta se realizó pero no pudo ser guardada en el servidor', 'Advertencia');
+                }
+              });
 
             this.toastr.success('Consulta realizada con éxito');
             this.canRetryManually = false;

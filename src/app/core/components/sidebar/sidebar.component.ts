@@ -103,6 +103,18 @@ import { User } from '../../interfaces/user.interface';
           </svg>
           <span [class.opacity-0]="!isOpen" [class.w-0]="!isOpen" class="transition-opacity duration-300">RTN</span>
         </a>
+        
+        <!-- Mis Consultas VB -->
+        <a
+          routerLink="/mis-consultas-vb"
+          routerLinkActive="bg-indigo-50 text-indigo-600"
+          class="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-600 hover:bg-indigo-50 hover:text-indigo-600"
+        >
+          <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
+          </svg>
+          <span [class.opacity-0]="!isOpen" [class.w-0]="!isOpen" class="transition-opacity duration-300">Mis Consultas VB</span>
+        </a>
 
         <!-- Logs (solo para admin) -->
         <a

@@ -56,6 +56,11 @@ export const routes: Routes = [
         canActivate: [authGuard]
       },
       {
+        path: 'mis-consultas-vb',
+        loadChildren: () => import('./features/mis-consultas-vb/mis-consultas-vb.routes'),
+        canActivate: [authGuard]
+      },
+      {
         path: 'perfil',
         loadComponent: () => import('./features/profile/profile.component').then(m => m.ProfileComponent),
         canActivate: [authGuard]

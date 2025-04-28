@@ -1281,8 +1281,10 @@ exportToPDF(): void {
           });
         });
         
+        
+        // pdfMake.createPdf(docDefinition).download(`Consulta_VentasBrutas_${this.consulta?.rtn}_${this.consulta?.anio}.pdf`);
         // Generar el PDF con el formato mejorado
-        pdfMake.createPdf(docDefinition).download('reporte-ventas-brutas.pdf');
+        pdfMake.createPdf(docDefinition).download(`reporte-Volumen-ventas-brutas-${this.consultasRealizadas[0].amdc[0].RTN}.pdf`);
         this.toastr.success('PDF generado con éxito');
       }).catch(error => {
         console.error('Error al cargar logoBuenCorazon:', error);

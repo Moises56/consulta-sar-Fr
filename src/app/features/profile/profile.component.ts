@@ -243,10 +243,12 @@ export class ProfileComponent implements OnInit {
         this.authService.changeOwnPassword(currentPassword, newPassword).subscribe({
           next: () => {
             this.loading = false;
-            this.successMessage = 'Contraseña actualizada exitosamente';
-            this.profileForm.get('currentPassword')?.reset();
-            this.profileForm.get('newPassword')?.reset();
-            this.profileForm.get('confirmPassword')?.reset();
+            // Ya no necesitamos mostrar un mensaje de éxito aquí, ya que el usuario será redirigido
+            
+            // Redirigir al usuario a la página de login después de un breve retraso
+            setTimeout(() => {
+              this.router.navigate(['/auth/login']);
+            }, 1500); // Esperar 1.5 segundos para que el usuario vea la notificación de éxito
           },
           error: () => {
             this.loading = false;

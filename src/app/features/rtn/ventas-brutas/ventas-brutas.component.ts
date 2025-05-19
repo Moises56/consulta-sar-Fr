@@ -597,10 +597,9 @@ export class VentasBrutasComponent implements OnInit {
               anio: consulta.anio,
               importeTotalVentas: consulta.importeTotalVentas
             },
-            amdc: Array.isArray(consulta.declaracionesAmdc) ? consulta.declaracionesAmdc.map((declaracion: DeclaracionAmdc) => ({
-              CANTIDAD_DECLARADA: declaracion.cantidadDeclarada,
+            amdc: Array.isArray(consulta.declaracionesAmdc) ? consulta.declaracionesAmdc.map((declaracion: DeclaracionAmdc) => ({              CANTIDAD_DECLARADA: declaracion.cantidadDeclarada,
               ESTATUS: declaracion.estatus === 'Vigente' ? 1 : 0,
-              FECHA: new Date(declaracion.fecha).toISOString(),
+              FECHA: this.getSafeDate(declaracion.fecha),
               NOMBRE_COMERCIAL: consulta.nombreComercial,
               RTN: consulta.rtn,
               id: '',
@@ -776,24 +775,26 @@ export class VentasBrutasComponent implements OnInit {
       this.error = null;
       this.ventasBrutas = null;
       this.datosAmdc = [];
-      this.canRetryManually = false;
-
-      const { rtn, periodoDesde, periodoHasta } = this.searchForm.value;
+      this.canRetryManually = false;      const { rtn, periodoDesde, periodoHasta } = this.searchForm.value;
       
       // Los periodos ya están en formato YYYYMM
       const periodoDesdeFormatted = periodoDesde;
       const periodoHastaFormatted = periodoHasta;
-      const anio = periodoDesdeFormatted.substring(0, 4);
+      const anioSAR = periodoDesdeFormatted.substring(0, 4);
+      
+      // Para la AMDC debemos consultar el año siguiente al consultado en SAR
+      // Las declaraciones a la AMDC se hacen sobre ingresos del año anterior
+      const anioAMDC = (parseInt(anioSAR) + 1).toString();
 
       // Guardar parámetros para posibles reintentos manuales
       this.lastSearchParams = {
         rtn,
         periodoDesde: periodoDesdeFormatted,
         periodoHasta: periodoHastaFormatted,
-        anio
+        anio: anioAMDC // Usamos año+1 para AMDC
       };
 
-      this.executeSearch(rtn, periodoDesdeFormatted, periodoHastaFormatted, anio);
+      this.executeSearch(rtn, periodoDesdeFormatted, periodoHastaFormatted, anioSAR);
       
       // Limpiar los campos del formulario después de realizar la búsqueda
       this.searchForm.patchValue({
@@ -815,11 +816,14 @@ export class VentasBrutasComponent implements OnInit {
   }
 
   // Método para ejecutar la búsqueda separado para poder reutilizarlo en reintentos manuales
-  executeSearch(rtn: string, periodoDesde: string, periodoHasta: string, anio: string): void {
+  executeSearch(rtn: string, periodoDesde: string, periodoHasta: string, anioSAR: string): void {
     this.loading = true;
     this.error = null;
     this.isRetrying = false;
     this.retryCount = 0;
+    
+    // Calcular el anio para la AMDC (año siguiente al de SAR)
+    const anioAMDC = (parseInt(anioSAR) + 1).toString();
     
     // Capturar eventos de reintento desde el servicio
     const sarConsultaObservable = this.rtnService.consultarVentasBrutas(rtn, periodoDesde, periodoHasta);
@@ -851,7 +855,7 @@ export class VentasBrutasComponent implements OnInit {
           return of({ isSuccess: false, message: 'Error al consultar ventas brutas. Puede intentarlo nuevamente.' });
         })
       ),
-      amdc: this.amdcService.consultarDatosAmdc(rtn, anio).pipe(
+      amdc: this.amdcService.consultarDatosAmdc(rtn, anioAMDC).pipe(
         catchError(error => {
           return of({ data: [] });
         })
@@ -915,7 +919,7 @@ export class VentasBrutasComponent implements OnInit {
             this.misConsultasVbService.guardarConsulta(consultaParaGuardar)
               .subscribe({
                 next: (response) => {
-                  console.log('Consulta guardada con éxito en el backend:', response);
+                  // console.log('Consulta guardada con éxito en el backend:', response);
                   this.toastr.success('Consulta guardada exitosamente', 'Guardado');
                 },
                 error: (error) => {
@@ -1468,5 +1472,32 @@ exportToPDF(): void {
   eliminarConsulta(index: number): void {
     this.consultasRealizadas.splice(index, 1);
     this.toastr.success('Consulta eliminada del historial');
+  }
+
+  // Método para manejar fechas de manera segura y evitar el error RangeError: Invalid time value
+  getSafeDate(dateValue: string | Date): string {
+    try {
+      // Si es string vacío o null/undefined, retornar una fecha por defecto
+      if (!dateValue) {
+        return new Date().toISOString();
+      }
+      
+      // Intentar crear un objeto Date válido
+      const date = new Date(dateValue);
+      
+      // Verificar si la fecha es válida
+      if (isNaN(date.getTime())) {
+        // Si la fecha es inválida, retornar la fecha actual como alternativa
+        console.warn('Fecha inválida detectada:', dateValue);
+        return new Date().toISOString();
+      }
+      
+      // Si llegamos aquí, la fecha es válida
+      return date.toISOString();
+    } catch (error) {
+      console.error('Error al procesar fecha:', error, dateValue);
+      // En caso de error, retornar la fecha actual como fallback
+      return new Date().toISOString();
+    }
   }
 }

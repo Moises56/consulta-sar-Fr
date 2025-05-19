@@ -61,7 +61,7 @@ export class AuthService {
       withCredentials: true
     }).pipe(
       tap(response => {
-        console.log('Login successful:', response);
+        // console.log('Login successful:', response);
         this.currentUserSubject.next(response.user);
         this.saveUserToStorage(response.user);
         this.toastr.success('Bienvenido ' + response.user.name);
@@ -117,7 +117,7 @@ export class AuthService {
       withCredentials: true
     }).pipe(
       tap(user => {
-        console.log('Profile check successful:', user);
+        // console.log('Profile check successful:', user);
         this.currentUserSubject.next(user);
         this.saveUserToStorage(user);
       }),
@@ -186,6 +186,9 @@ export class AuthService {
       tap(response => {
         console.log('Password changed successfully');
         this.toastr.success(response.message || 'Contraseña actualizada exitosamente');
+        
+        // Después de cambiar la contraseña, cerrar sesión para obligar al usuario a iniciar sesión de nuevo
+        this.clearStoredUser();
       }),
       catchError((error: HttpErrorResponse) => {
         console.error('Password change failed:', error);

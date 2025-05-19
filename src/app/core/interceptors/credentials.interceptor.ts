@@ -17,7 +17,7 @@ export const credentialsInterceptor: HttpInterceptorFn = (req, next) => {
   
   // Only modify requests going to our API
   if (req.url.startsWith(environment.apiUrl)) {
-    console.log('Intercepting request to:', req.url);
+    // console.log('Intercepting request to:', req.url);
     
     // Skip refresh attempts if this is a refresh request or logout request
     if (req.url.includes('/auth/refresh') || req.url.includes('/auth/logout')) {
@@ -38,7 +38,7 @@ export const credentialsInterceptor: HttpInterceptorFn = (req, next) => {
             
           // Avoid multiple simultaneous refresh attempts
           if (!refreshState.isRefreshing) {
-            console.log(`Authentication error (${error.status}). Attempting to refresh session...`);
+            // console.log(`Authentication error (${error.status}). Attempting to refresh session...`);
             refreshState.isRefreshing = true;
             refreshState.refreshAttempts++;
             
@@ -88,7 +88,7 @@ export const credentialsInterceptor: HttpInterceptorFn = (req, next) => {
         // If we've reached max refresh attempts, redirect to login
         if ((error.status === 401 || error.status === 403) && 
             refreshState.refreshAttempts >= refreshState.maxRefreshAttempts) {
-          console.log('Max refresh attempts reached. Redirecting to login');
+          // console.log('Max refresh attempts reached. Redirecting to login');
           localStorage.removeItem('currentUser');
           router.navigate(['/auth/login']);
         }
